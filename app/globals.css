@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand Colors - Trainera */
+    --baskonia-red: 357 94% 48%;      /* #d71e28 */
+    --baskonia-green: 161 66% 40%;    /* #1da174 */
+    
+    /* Light mode */
+    --background: 40 20% 98%;          /* Warm cream */
+    --foreground: 20 14% 12%;          /* Dark warm gray */
+    --card: 0 0% 100%;
+    --card-foreground: 20 14% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14% 12%;
+    --primary: var(--baskonia-red);
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 10% 96%;
+    --secondary-foreground: 20 14% 12%;
+    --muted: 30 10% 94%;
+    --muted-foreground: 20 8% 40%;
+    --accent: var(--baskonia-green);
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 10% 88%;
+    --input: 30 10% 88%;
+    --ring: var(--baskonia-red);
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark mode overrides if needed */
+    --background: 20 14% 8%;
+    --foreground: 30 10% 95%;
+    --card: 20 14% 10%;
+    --card-foreground: 30 10% 95%;
+    --secondary: 20 10% 15%;
+    --secondary-foreground: 30 10% 95%;
+    --muted: 20 10% 15%;
+    --muted-foreground: 30 5% 60%;
+    --border: 20 10% 20%;
+    --input: 20 10% 20%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

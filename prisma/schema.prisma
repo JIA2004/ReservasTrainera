@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Mesa {
+  id        String   @id @default(cuid())
+  nombre    String
+  capacidad Int
+  tipo      MesaTipo @default(MESA)
+  activa    Boolean  @default(true)
+  reservas  ReservaMesa[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("mesas")
+}
+
+enum MesaTipo {
+  MESA
+  BARRA
+}
+
+model Reserva {
+  id                  String        @id @default(cuid())
+  nombre              String
+  apellido            String
+  email               String
+  telefono            String
+  fecha               DateTime      @db.Date
+  hora                String
+  comensales          Int
+  estado              ReservaEstado @default(PENDIENTE)
+  cancelToken         String        @unique @default(cuid())
+  recordatorioEnviado  Boolean       @default(false)
+  mesas               ReservaMesa[]
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([fecha])
+  @@index([fecha, hora])
+  @@index([estado])
+  @@map("reservas")
+}
+
+enum ReservaEstado {
+  PENDIENTE
+  CONFIRMADA
+  CANCELADA
+  COMPLETADA
+  NO_ASISTIO
+  REQUIERE_ATENCION
+}
+
+model ReservaMesa {
+  reserva   Reserva @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+  reservaId String
+  mesa      Mesa    @relation(fields: [mesaId], references: [id])
+  mesaId    String
+
+  @@id([reservaId, mesaId])
+  @@map("reservas_mesas")
+}
+
+model Configuracion {
+  id                   String @id @default("global")
+  emailDueno           String @default("")
+  toleranciaMinutos    Int    @default(10)
+  diasAntelacionMin    Int    @default(0)
+  diasAntelacionMax    Int    @default(30)
+  horariosReservas     String @default("19:00,19:30,20:00,20:30,21:00,21:30,22:00,22:30")
+
+  @@map("configuracion")
+}
