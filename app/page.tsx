@@ -32,8 +32,8 @@ export default function HomePage() {
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6 text-white/90">
             <Link href="#historia" className="hover:text-white transition-colors">Historia</Link>
-            <Link href="#carta" className="hover:text-white transition-colors">Carta</Link>
-            <Link href="#ubicacion" className="hover:text-white transition-colors">Ubicación</Link>
+            <a href="https://taberna.trainera.com.ar" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Carta</a>
+            <a href="https://www.google.com/maps/search/?api=1&query=Constitución+306+Rosario+Argentina" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Ubicación</a>
           </nav>
 
           {/* Desktop CTA */}
@@ -64,20 +64,22 @@ export default function HomePage() {
               >
                 Historia
               </Link>
-              <Link 
-                href="#carta" 
+              <a 
+                href="https://taberna.trainera.com.ar" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-white/90 hover:text-white py-2"
-                onClick={() => setMobileMenuOpen(false)}
               >
                 Carta
-              </Link>
-              <Link 
-                href="#ubicacion" 
+              </a>
+              <a 
+                href="https://www.google.com/maps/search/?api=1&query=Constitución+306+Rosario+Argentina"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-white/90 hover:text-white py-2"
-                onClick={() => setMobileMenuOpen(false)}
               >
                 Ubicacion
-              </Link>
+              </a>
               <Link 
                 href="/reservar" 
                 className="text-center"
