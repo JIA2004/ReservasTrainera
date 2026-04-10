@@ -5,29 +5,29 @@
 @layer base {
   :root {
     /* Brand Colors - Trainera */
-    --baskonia-red: 357 94% 48%;      /* #d71e28 */
-    --baskonia-green: 161 66% 40%;    /* #1da174 */
+    /* #37394e = HSL(233, 12%, 29%) */
+    --brand: 233 12% 29%;
     
-    /* Light mode */
-    --background: 40 20% 98%;          /* Warm cream */
-    --foreground: 20 14% 12%;          /* Dark warm gray */
+    /* Light mode - blanco y #37394e */
+    --background: 0 0% 100%;          /* Blanco */
+    --foreground: 233 12% 29%;         /* #37394e */
     --card: 0 0% 100%;
-    --card-foreground: 20 14% 12%;
+    --card-foreground: 233 12% 29%;
     --popover: 0 0% 100%;
-    --popover-foreground: 20 14% 12%;
-    --primary: var(--baskonia-red);
+    --popover-foreground: 233 12% 29%;
+    --primary: var(--brand);
     --primary-foreground: 0 0% 100%;
-    --secondary: 30 10% 96%;
-    --secondary-foreground: 20 14% 12%;
-    --muted: 30 10% 94%;
-    --muted-foreground: 20 8% 40%;
-    --accent: var(--baskonia-green);
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 233 12% 29%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 233 8% 45%;
+    --accent: var(--brand);
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 51%;
+    --destructive: 0 0% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 30 10% 88%;
-    --input: 30 10% 88%;
-    --ring: var(--baskonia-red);
+    --border: 233 12% 29%;
+    --input: 233 12% 29%;
+    --ring: var(--brand);
     --radius: 0.5rem;
   }
 

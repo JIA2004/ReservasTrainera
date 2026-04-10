@@ -69,7 +69,7 @@ export default async function AdminReservasDiaPage({ params }: Props) {
       <div className="mb-8">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-2 text-gray-500 hover:text-red-600 mb-4 transition-colors"
+          className="inline-flex items-center gap-2 text-gray-500 hover:text-brand mb-4 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver al calendario
@@ -85,7 +85,7 @@ export default async function AdminReservasDiaPage({ params }: Props) {
             </p>
           </div>
           
-          <Link href="/admin/config" className="text-sm text-gray-500 hover:text-red-600 transition-colors">
+          <Link href="/admin/config" className="text-sm text-gray-500 hover:text-brand transition-colors">
             Configurar horarios →
           </Link>
         </div>

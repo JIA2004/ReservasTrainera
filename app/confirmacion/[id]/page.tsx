@@ -10,7 +10,7 @@ export default async function ConfirmacionPage({ params }: Props) {
   const esTemporal = params.id.startsWith('temp-');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-100 via-amber-50 to-stone-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">

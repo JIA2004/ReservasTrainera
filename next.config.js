@@ -52,15 +52,6 @@ const nextConfig = {
       },
     ];
   },
-
-  // Excluir API routes del build para evitar errores de conexión a DB
-  // Las APIs son serverless y se ejecutan en runtime, no en build
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: false,
-  },
 };
 
 module.exports = nextConfig;

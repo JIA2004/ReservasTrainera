@@ -158,8 +158,8 @@ export default function ReservarPage() {
 
       {/* Background decoration */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-green-600/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-brand/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand/5 rounded-full blur-3xl" />
       </div>
 
       {/* Content */}
@@ -168,8 +168,8 @@ export default function ReservarPage() {
           <div className="max-w-2xl mx-auto">
             {/* Header */}
             <div className="text-center mb-12">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-600/30 mb-6">
-                <CalendarDays className="h-10 w-10 text-green-600" />
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-brand/30 mb-6">
+                <CalendarDays className="h-10 w-10 text-brand" />
               </div>
               <h1 className="text-5xl font-serif text-white mb-4">
                 Reservá tu mesa
@@ -181,7 +181,7 @@ export default function ReservarPage() {
             </div>
 
             {error && (
-              <div className="bg-red-600/30 border border-red-600 text-red-200 px-6 py-4 rounded-lg mb-8 max-w-2xl mx-auto">
+              <div className="bg-brand/30 border border-brand text-brand px-6 py-4 rounded-lg mb-8 max-w-2xl mx-auto">
                 {error}
               </div>
             )}
@@ -191,7 +191,7 @@ export default function ReservarPage() {
               <Card className="mb-8 bg-stone-900 border-stone-800">
                 <CardHeader className="bg-stone-800/50 rounded-t-lg border-b border-stone-700">
                   <CardTitle className="text-xl flex items-center gap-3 text-white">
-                    <CalendarDays className="h-6 w-6 text-green-600" />
+                    <CalendarDays className="h-6 w-6 text-brand" />
                     Fecha y horario
                   </CardTitle>
                 </CardHeader>
@@ -208,7 +208,7 @@ export default function ReservarPage() {
                         fromDate={today}
                         toDate={maxDate}
                         locale={es}
-                        className="rounded-lg border-stone-700 bg-stone-800 [&_.rdp-day]:text-stone-200 [&_.rdp-day_selected]:bg-red-700 [&_.rdp-day_selected]:text-white"
+                        className="rounded-lg border-stone-700 bg-stone-800 [&_.rdp-day]:text-stone-200 [&_.rdp-day_selected]:bg-brand [&_.rdp-day_selected]:text-white"
                       />
                     </div>
                     <p className="text-xs text-stone-500 mt-4 text-center">
@@ -237,7 +237,7 @@ export default function ReservarPage() {
                               >
                                 <div className="flex items-center justify-between w-full py-2">
                                   <span className="font-semibold text-lg">{horaKey}</span>
-                                  <span className={`ml-4 text-sm ${puede ? 'text-green-400' : 'text-red-400'}`}>
+                                  <span className={`ml-4 text-sm ${puede ? 'text-brand' : 'text-gray-400'}`}>
                                     {puede ? `${disponibles} lugares` : 'Completo'}
                                   </span>
                                 </div>
@@ -284,7 +284,7 @@ export default function ReservarPage() {
               <Card className="mb-8 bg-stone-900 border-stone-800">
                 <CardHeader className="bg-stone-800/50 rounded-t-lg border-b border-stone-700">
                   <CardTitle className="text-xl flex items-center gap-3 text-white">
-                    <Users className="h-6 w-6 text-green-600" />
+                    <Users className="h-6 w-6 text-brand" />
                     Tus datos
                   </CardTitle>
                 </CardHeader>
@@ -347,7 +347,7 @@ export default function ReservarPage() {
               <Button
                 type="submit"
                 size="lg"
-                className="w-full bg-red-600 hover:bg-red-700 text-white border-0 py-7 text-xl font-semibold"
+                className="w-full bg-brand hover:bg-brand/90 text-white border-0 py-7 text-xl font-semibold"
                 disabled={loading || !selectedDate || !selectedHora}
               >
                 {loading ? (
@@ -376,7 +376,7 @@ export default function ReservarPage() {
                 href="https://taberna.trainera.com.ar"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-amber-500 hover:text-amber-400 font-medium text-lg"
+                className="inline-flex items-center gap-2 text-white hover:text-gray-300 font-medium text-lg"
               >
                 <Wine className="h-5 w-5" />
                 Ver nuestra carta

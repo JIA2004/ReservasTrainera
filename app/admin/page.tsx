@@ -75,9 +75,9 @@ export default function AdminDashboardPage() {
 
   const getIntensityClass = (count: number) => {
     if (count === 0) return 'bg-stone-50';
-    if (count <= 2) return 'bg-red-100 hover:bg-red-200';
-    if (count <= 4) return 'bg-red-200 hover:bg-red-300';
-    return 'bg-red-300 hover:bg-red-400';
+    if (count <= 2) return 'bg-red-100 hover:bg-brand200';
+    if (count <= 4) return 'bg-red-200 hover:bg-brand300';
+    return 'bg-red-300 hover:bg-brand400';
   };
 
   const totalReservas = Object.values(reservasDelMes).reduce((a, b) => a + b, 0);
@@ -89,7 +89,7 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-brand rounded-xl flex items-center justify-center">
             <Calendar className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -159,7 +159,7 @@ export default function AdminDashboardPage() {
         <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-stone-50 to-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-red-600" />
+              <Calendar className="w-5 h-5 text-brand" />
             </div>
             <h2 className="text-xl font-bold text-gray-900 capitalize">
               {format(selectedMonth, 'MMMM yyyy', { locale: es })}
@@ -189,7 +189,7 @@ export default function AdminDashboardPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setSelectedMonth(today)}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="text-brand hover:text-red-700 hover:bg-brand50"
               >
                 Hoy
               </Button>
@@ -203,7 +203,7 @@ export default function AdminDashboardPage() {
             <div 
               key={day} 
               className={`p-3 text-center text-sm font-semibold ${
-                i === 6 ? 'text-red-600' : 'text-gray-600'
+                i === 6 ? 'text-brand' : 'text-gray-600'
               }`}
             >
               <span className="hidden sm:inline">{day}</span>
@@ -236,15 +236,15 @@ export default function AdminDashboardPage() {
                   <span className={`
                     text-xs sm:text-sm font-semibold
                     ${!isCurrentMonth ? 'text-gray-300' : 'text-gray-700'}
-                    ${isToday ? 'bg-red-600 text-white rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center' : ''}
-                    ${isSunday && isCurrentMonth ? 'text-red-600' : ''}
+                    ${isToday ? 'bg-brand text-white rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center' : ''}
+                    ${isSunday && isCurrentMonth ? 'text-brand' : ''}
                   `}>
                     {format(day, 'd')}
                   </span>
                   {count > 0 && (
                     <div className={`
                       text-xs font-bold px-1.5 py-0.5 rounded-full
-                      ${count <= 2 ? 'bg-red-600 text-white' : 'bg-red-800 text-white'}
+                      ${count <= 2 ? 'bg-brand text-white' : 'bg-red-800 text-white'}
                     `}>
                       {count}
                     </div>

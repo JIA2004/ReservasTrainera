@@ -6,11 +6,10 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Clock, UtensilsCrossed, Wine, ChefHat, ArrowRight, Star, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
-// Paleta de colores para Taberna Vasca:
-// - Rojo Baskonia: #d71e28 (red-600)
-// - Verde Baskonia: #1da174 (green-600)  
-// - Crema: #fef7ed (amber-50)
-// - Fondos oscuros cálidos
+// Paleta de colores:
+// - Brand: #37394e
+// - Blanco
+// - Negro
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -39,7 +38,7 @@ export default function HomePage() {
 
           {/* Desktop CTA */}
           <Link href="/reservar" className="hidden md:block">
-            <Button className="bg-red-600 hover:bg-red-700 text-white border-0">
+            <Button className="bg-brand hover:bg-brand/90 text-white border-0">
               Reservar
             </Button>
           </Link>
@@ -84,7 +83,7 @@ export default function HomePage() {
                 className="text-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Button className="bg-red-600 hover:bg-red-700 text-white border-0 w-full">
+                <Button className="bg-brand hover:bg-brand/90 text-white border-0 w-full">
                   Reservar
                 </Button>
               </Link>
@@ -94,7 +93,7 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative h-screen min-h-[700px]">
+      <section className="relative min-h-[85vh]">
         <div className="absolute inset-0">
           <Image
             src="/imgs/TortillaVasca.jpg"
@@ -107,64 +106,60 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/60" />
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center">
+        <div className="relative z-10 container mx-auto px-4 pt-20 pb-16 flex flex-col justify-between min-h-[85vh]">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-black/40 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-white/20">
-              <Wine className="h-4 w-4 text-green-500" />
-              <span className="text-green-500 text-sm font-medium">Sidrería y Restaurante</span>
+            <div className="inline-flex items-center gap-2 bg-black/40 backdrop-blur-sm px-4 py-2 rounded-full mb-4 border border-white/20">
+              <Wine className="h-4 w-4 text-white" />
+              <span className="text-white text-sm font-medium">Sidrería y Restaurante</span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-6 leading-none drop-shadow-lg">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-4 leading-none drop-shadow-lg">
               Sabores del
-              <span className="block text-red-600">País Vasco</span>
+              <span className="block text-white">País Vasco</span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-xl leading-relaxed drop-shadow-md">
+            <p className="text-xl md:text-2xl text-white/90 mb-6 max-w-xl leading-relaxed drop-shadow-md">
               En el corazón de Rosario, una experiencia gastronómica que 
-              trasciende generaciones. Tradición, pasión y sabor.
+              trasciende generaciones.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/reservar">
-                <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white border-0 px-8 py-6 text-lg">
+                <Button size="lg" className="bg-brand text-white hover:bg-brand/90 border-0 px-8 py-6 text-lg font-semibold">
                   <ChefHat className="mr-2 h-5 w-5" />
                   Reservar una mesa
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <a href="https://taberna.trainera.com.ar" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-red-900 px-8 py-6 text-lg bg-transparent">
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-brand px-8 py-6 text-lg bg-black/30">
                   <UtensilsCrossed className="mr-2 h-5 w-5" />
                   Ver carta
                 </Button>
               </a>
             </div>
           </div>
-        </div>
 
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent pt-16 pb-6">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-wrap justify-center gap-8 md:gap-16 text-white/80">
-              <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-red-600" />
-                <div>
-                  <p className="font-semibold text-white">Horarios</p>
-                  <p className="text-sm">Mar-Sáb 19:00 - 23:00</p>
-                </div>
+          <div className="flex flex-wrap justify-center gap-6 md:gap-10 text-white/90 mt-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <div>
+                <p className="font-semibold text-white text-sm">Horarios</p>
+                <p className="text-xs">Mar-Sáb 19:00-23:00</p>
               </div>
-              <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-red-600" />
-                <div>
-                  <p className="font-semibold text-white">Ubicación</p>
-                  <p className="text-sm">Rosario, Argentina</p>
-                </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              <div>
+                <p className="font-semibold text-white text-sm">Ubicación</p>
+                <p className="text-xs">Constitución 306</p>
               </div>
-              <div className="flex items-center gap-3">
-                <Star className="h-5 w-5 text-green-500" />
-                <div>
-                  <p className="font-semibold text-white">Experiencia</p>
-                  <p className="text-sm">Cocina tradicional vasca</p>
-                </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Star className="h-4 w-4" />
+              <div>
+                <p className="font-semibold text-white text-sm">Experiencia</p>
+                <p className="text-xs">Cocina vasca</p>
               </div>
             </div>
           </div>
@@ -176,23 +171,23 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-green-600 font-medium tracking-wider uppercase text-sm mb-3">
+              <p className="text-white/70 font-medium tracking-wider uppercase text-sm mb-3">
                 Nuestra historia
               </p>
               <h2 className="text-4xl md:text-5xl font-serif text-white mb-6">
                 Tradición Vasca
-                <span className="block text-red-600">en Rosario</span>
+                <span className="block text-white">en Rosario</span>
               </h2>
               <div className="space-y-4 text-stone-400 leading-relaxed">
                 <p>
                   Itziar Aguirre, chef y fundadora de Trainera, trae consigo más de 
-                  <span className="text-green-500 font-semibold"> 30 años de trayectoria</span> en la cocina vasca. 
+                  <span className="text-brand font-semibold"> 30 años de trayectoria</span> en la cocina vasca. 
                   Trabajó durante 25 años en el icónico Zazpirak Bat junto a su madre, 
                   antes de crear su propio proyecto.
                 </p>
                 <p>
                   En 2020 nació Trainera, la evolución de un sueño familiar. Itziar fue 
-                  declarada <span className="text-green-500 font-semibold">"Cocinera Distinguida de Rosario"</span> 
+                  declarada <span className="text-brand font-semibold">"Cocinera Distinguida de Rosario"</span> 
                   por el Concejo Municipal, y es la única argentina seleccionada en el libro 
                   "Mamia" del Basque Culinary Center, que reconoce a las 50 mujeres que 
                   transformaron la cocina vasca en el mundo.
@@ -205,15 +200,15 @@ export default function HomePage() {
               </div>
               <div className="mt-8 flex gap-4">
                 <div className="text-center">
-                  <p className="text-3xl font-serif text-red-600 font-bold">30+</p>
+                  <p className="text-3xl font-serif text-brand font-bold">30+</p>
                   <p className="text-stone-500 text-sm">Años de trayectoria</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-serif text-red-600 font-bold">25+</p>
+                  <p className="text-3xl font-serif text-brand font-bold">25+</p>
                   <p className="text-stone-500 text-sm">Años en Zazpirak Bat</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-serif text-red-600 font-bold">2020</p>
+                  <p className="text-3xl font-serif text-brand font-bold">2020</p>
                   <p className="text-stone-500 text-sm">Año de fundación</p>
                 </div>
               </div>
@@ -227,8 +222,8 @@ export default function HomePage() {
                   className="object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-red-600/20 rounded-full blur-2xl" />
-              <div className="absolute -top-6 -right-6 w-24 h-24 bg-green-600/20 rounded-full blur-2xl" />
+              <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+              <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
             </div>
           </div>
         </div>
@@ -238,12 +233,12 @@ export default function HomePage() {
       <section className="py-24 bg-stone-950">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <p className="text-green-600 font-medium tracking-wider uppercase text-sm mb-3">
+            <p className="text-white/70 font-medium tracking-wider uppercase text-sm mb-3">
               Nuestras especialidades
             </p>
             <h2 className="text-4xl md:text-5xl font-serif text-white">
               Sabores que definen
-              <span className="block text-red-600">la esencia vasca</span>
+              <span className="block text-white">la esencia vasca</span>
             </h2>
           </div>
 
@@ -259,7 +254,7 @@ export default function HomePage() {
                 />
               </div>
               <div className="p-6 pb-8">
-                <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-red-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-brand to-brand rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-white/20">
                   <UtensilsCrossed className="h-5 w-5 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Gambas al Ajillo</h3>
@@ -281,8 +276,8 @@ export default function HomePage() {
                 />
               </div>
               <div className="p-6 pb-8">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-green-200">
-                  <Wine className="h-5 w-5 text-white" />
+                <div className="w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-800 rounded-xl flex items-center justify-center mb-4">
+                  <UtensilsCrossed className="h-5 w-5 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Lomo</h3>
                 <p className="text-gray-600 leading-relaxed">
@@ -303,7 +298,7 @@ export default function HomePage() {
                 />
               </div>
               <div className="p-6 pb-8">
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-amber-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-brand to-brand/80 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-brand/20">
                   <ChefHat className="h-5 w-5 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Natilla</h3>
@@ -317,7 +312,7 @@ export default function HomePage() {
 
           <div className="text-center mt-12" id="carta">
             <a href="https://taberna.trainera.com.ar" target="_blank" rel="noopener noreferrer">
-              <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white border-0 px-10 shadow-lg shadow-green-200">
+              <Button size="lg" className="bg-white text-black hover:bg-gray-200 border-0 px-10">
                 Ver carta completa
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -327,7 +322,7 @@ export default function HomePage() {
       </section>
 
       {/* Reservas CTA */}
-      <section className="py-24 bg-gradient-to-r from-red-900 to-red-950">
+      <section className="py-24 bg-gradient-to-r from-brand to-red-950">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-serif text-white mb-4">
             Vive la experiencia Trainera
@@ -337,7 +332,7 @@ export default function HomePage() {
             en Rosario. Recomendamos reservar con anticipación.
           </p>
           <Link href="/reservar">
-            <Button size="lg" className="bg-white text-red-900 hover:bg-white/90 border-0 px-12 py-7 text-lg">
+            <Button size="lg" className="bg-white text-brand hover:bg-white/90 border-0 px-12 py-7 text-lg">
               <ChefHat className="mr-2 h-5 w-5" />
               Reservar ahora
             </Button>
@@ -368,7 +363,7 @@ export default function HomePage() {
             {/* Address */}
             <div>
               <h4 className="text-white font-bold mb-4 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-red-500" />
+                <MapPin className="w-4 h-4 text-white" />
                 Dirección
               </h4>
               <div className="space-y-2 text-stone-400">
@@ -381,17 +376,17 @@ export default function HomePage() {
             {/* Contact */}
             <div>
               <h4 className="text-white font-bold mb-4 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-red-500" />
+                <Clock className="w-4 h-4 text-white" />
                 Contacto
               </h4>
               <div className="space-y-2">
-                <a href="tel:+543416880752" className="text-stone-400 hover:text-red-500 block transition-colors">
+                <a href="tel:+543416880752" className="text-stone-400 hover:text-white block transition-colors">
                   3416-880752
                 </a>
-                <a href="mailto:contacto@trainera.com.ar" className="text-green-500 hover:text-green-400 block transition-colors">
+                <a href="mailto:contacto@trainera.com.ar" className="text-white hover:text-gray-300 block transition-colors">
                   contacto@trainera.com.ar
                 </a>
-                <a href="https://taberna.trainera.com.ar" target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-400 block transition-colors">
+                <a href="https://taberna.trainera.com.ar" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 block transition-colors">
                   Ver carta online
                 </a>
               </div>
@@ -405,10 +400,10 @@ export default function HomePage() {
                 © {new Date().getFullYear()} Trainera - Cocina Vasca
               </p>
               <div className="flex items-center gap-6">
-                <a href="https://taberna.trainera.com.ar" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-500 text-sm transition-colors">
+                <a href="https://taberna.trainera.com.ar" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-brand text-sm transition-colors">
                   Carta
                 </a>
-                <Link href="/reservar" className="text-stone-500 hover:text-red-500 text-sm transition-colors">
+                <Link href="/reservar" className="text-stone-500 hover:text-brand text-sm transition-colors">
                   Reservar
                 </Link>
               </div>
