@@ -13,9 +13,9 @@ const updateSchema = z.object({
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const session = cookieStore.get('admin_session');
   
   if (!session || session.value !== process.env.ADMIN_SESSION_SECRET) {
@@ -23,8 +23,9 @@ export async function GET(
   }
 
   try {
+    const { id } = await params;
     const reserva = await prisma.reserva.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         mesas: {
           include: { mesa: true },
@@ -48,9 +49,9 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const session = cookieStore.get('admin_session');
   
   if (!session || session.value !== process.env.ADMIN_SESSION_SECRET) {
@@ -60,9 +61,10 @@ export async function PATCH(
   try {
     const body = await request.json();
     const data = updateSchema.parse(body);
+    const { id } = await params;
 
     const reserva = await prisma.reserva.update({
-      where: { id: params.id },
+      where: { id },
       data,
       include: {
         mesas: {

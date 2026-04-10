@@ -4,12 +4,14 @@ import { enviarCancelacionCliente, enviarNotificacionCancelacionDueno } from '@/
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     // Obtener la reserva
     const reserva = await prisma.reserva.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         mesas: {
           include: { mesa: true },
@@ -35,12 +37,12 @@ export async function POST(
     await prisma.$transaction(async (tx) => {
       // Eliminar asignaciones de mesas
       await tx.reservaMesa.deleteMany({
-        where: { reservaId: params.id },
+        where: { reservaId: id },
       });
 
       // Actualizar estado
       await tx.reserva.update({
-        where: { id: params.id },
+        where: { id },
         data: { estado: 'CANCELADA' },
       });
     });

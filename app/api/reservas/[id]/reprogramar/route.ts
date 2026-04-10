@@ -5,15 +5,16 @@ import { ReservaEstado } from '@prisma/client';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const { fecha, hora } = body;
+    const { id } = await params;
 
     // Obtener la reserva actual
     const reservaActual = await prisma.reserva.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         mesas: {
           include: { mesa: true },
@@ -81,12 +82,12 @@ export async function POST(
     const reserva = await prisma.$transaction(async (tx) => {
       // Liberar mesas actuales
       await tx.reservaMesa.deleteMany({
-        where: { reservaId: params.id },
+        where: { reservaId: id },
       });
 
       // Actualizar reserva con nuevo horario
       const updated = await tx.reserva.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           fecha: fechaDate,
           hora,
@@ -104,7 +105,7 @@ export async function POST(
       if (match.mesasAsignadas && match.mesasAsignadas.length > 0) {
         await tx.reservaMesa.createMany({
           data: match.mesasAsignadas.map((mesa) => ({
-            reservaId: params.id,
+            reservaId: id,
             mesaId: mesa.id,
           })),
         });
