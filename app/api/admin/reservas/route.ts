@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const estado = searchParams.get('estado');
 
   // Verificar autenticación
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const session = cookieStore.get('admin_session');
   
   if (!session || session.value !== process.env.ADMIN_SESSION_SECRET) {
