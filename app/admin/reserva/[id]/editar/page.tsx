@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,12 +23,10 @@ interface Reserva {
   mesas: { mesa: { nombre: string } }[];
 }
 
-interface Props {
-  params: { id: string };
-}
-
-export default function EditarReservaPage({ params }: Props) {
+export default function EditarReservaPage() {
   const router = useRouter();
+  const params = useParams();
+  const reservaId = params.id as string;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -43,7 +41,7 @@ export default function EditarReservaPage({ params }: Props) {
   useEffect(() => {
     const fetchReserva = async () => {
       try {
-        const res = await fetch(`/api/admin/reservas/${params.id}`);
+        const res = await fetch(`/api/admin/reservas/${reservaId}`);
         const data = await res.json();
 
         if (!res.ok) {
@@ -65,7 +63,7 @@ export default function EditarReservaPage({ params }: Props) {
     };
 
     fetchReserva();
-  }, [params.id]);
+  }, [reservaId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +71,7 @@ export default function EditarReservaPage({ params }: Props) {
     setError('');
 
     try {
-      const res = await fetch(`/api/admin/reservas/${params.id}`, {
+      const res = await fetch(`/api/admin/reservas/${reservaId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

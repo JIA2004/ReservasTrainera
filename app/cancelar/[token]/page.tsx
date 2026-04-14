@@ -7,7 +7,7 @@ import { CancelForm } from './_components/cancel-form';
 import { AlertCircle, CalendarDays, Clock, Users, MapPin } from 'lucide-react';
 
 interface Props {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }
 
 async function getReservaByToken(token: string) {
@@ -23,7 +23,8 @@ async function getReservaByToken(token: string) {
 }
 
 export default async function CancelarPage({ params }: Props) {
-  const reserva = await getReservaByToken(params.token);
+  const resolvedParams = await params;
+  const reserva = await getReservaByToken(resolvedParams.token);
 
   if (!reserva) {
     notFound();

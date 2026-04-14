@@ -10,7 +10,7 @@ import { ArrowLeft, Calendar, Users, AlertCircle } from 'lucide-react';
 import { ReservaCard } from './_components/reserva-card';
 
 interface Props {
-  params: { fecha: string };
+  params: Promise<{ fecha: string }>;
 }
 
 async function getReservasDelDia(fecha: string) {
@@ -39,7 +39,8 @@ async function getReservasDelDia(fecha: string) {
 }
 
 export default async function AdminReservasDiaPage({ params }: Props) {
-  const fecha = params.fecha;
+  const resolvedParams = await params;
+  const fecha = resolvedParams.fecha;
   
   // Validate date format
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {

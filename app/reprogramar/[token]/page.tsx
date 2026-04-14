@@ -7,7 +7,7 @@ import { ReprogramarForm } from './_components/reprogramar-form';
 import { CalendarClock, ArrowRight } from 'lucide-react';
 
 interface Props {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }
 
 async function getReservaByToken(token: string) {
@@ -28,7 +28,8 @@ async function getConfig() {
 }
 
 export default async function ReprogramarPage({ params }: Props) {
-  const reserva = await getReservaByToken(params.token);
+  const resolvedParams = await params;
+  const reserva = await getReservaByToken(resolvedParams.token);
   const config = await getConfig();
 
   if (!reserva) {

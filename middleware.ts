@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Proteger rutas de admin (excepto login)
+  // Redireccionar al login si no está logueado (excepto /admin/login)
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
     const session = request.cookies.get('admin_session');
 
