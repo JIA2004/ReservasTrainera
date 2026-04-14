@@ -3,11 +3,13 @@ import Image from 'next/image';
 import { ConfirmacionCard } from './ConfirmacionCard';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function ConfirmacionPage({ params }: Props) {
-  const esTemporal = params.id.startsWith('temp-');
+  const resolvedParams = await params;
+  const reservaId = resolvedParams?.id || '';
+  const esTemporal = reservaId.startsWith('temp-');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -28,7 +30,7 @@ export default async function ConfirmacionPage({ params }: Props) {
 
       {/* Content */}
       <main className="container mx-auto px-4 py-12">
-        <ConfirmacionCard reservaId={params.id} />
+        <ConfirmacionCard reservaId={reservaId} />
       </main>
 
       {/* Footer */}
