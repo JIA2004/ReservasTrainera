@@ -43,16 +43,10 @@ export default function AdminLayout({
     );
   }
 
-  // Si no está logueado, no mostrar sidebar
+  // Si no está logueado, no mostrar contenido (el middleware redirect ya se encargó)
+  // Este código no debería ejecutarse, pero por seguridad verificamos
   if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Redirigiendo al login...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const NavLink = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => (
