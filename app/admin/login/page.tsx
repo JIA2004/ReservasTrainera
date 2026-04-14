@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,22 +14,35 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const router = useRouter();
+  const mounted = useRef(false);
 
   useEffect(() => {
+    mounted.current = true;
+    
     // Si ya está logueado, redirigir directamente al admin
     const checkSession = async () => {
       try {
         const res = await fetch('/api/auth/check');
-        if (res.ok) {
+        if (mounted.current && res.ok) {
           router.replace('/admin');
           return;
         }
       } catch {
         // Ignorar error
       }
-      setCheckingSession(false);
+      // Timeout de seguridad - si no responde en 3 segundos, mostrar el form
+      setTimeout(() => {
+        if (mounted.current) {
+          setCheckingSession(false);
+        }
+      }, 3000);
     };
+    
     checkSession();
+
+    return () => {
+      mounted.current = false;
+    };
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
