@@ -4,6 +4,11 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // исключить /admin/login del middleware
+  if (pathname === '/admin/login') {
+    return NextResponse.next();
+  }
+
   // Redireccionar al login si no está logueado (excepto /admin/login)
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
     const session = request.cookies.get('admin_session');
