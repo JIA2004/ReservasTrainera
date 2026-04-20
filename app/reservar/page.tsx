@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarDays, Clock, Users, Loader2, Wine, ArrowLeft } from 'lucide-react';
+import { CalendarDays, Clock, Users, Loader2, Wine, ArrowLeft, Armchair, LayoutDashboard, AlertTriangle } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -18,6 +18,8 @@ export default function ReservarPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [preferenciaUbicacion, setPreferenciaUbicacion] = useState<'MESA' | 'BARRA' | ''>('');
+  const [soloBarraDisponible, setSoloBarraDisponible] = useState(false);
 
   // Form state
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
@@ -68,6 +70,12 @@ export default function ReservarPage() {
         
         setHorarios(horariosCargados);
         setDisponibilidad(slots);
+
+        // Check if only barra is available for this date
+        if (preferenciaUbicacion === 'MESA') {
+          const hayMesas = Object.values(slots).some((d: any) => d > 0);
+          setSoloBarraDisponible(!hayMesas);
+        }
       } catch (err) {
         setHorarios(['19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30']);
         setDisponibilidad({});
@@ -82,6 +90,12 @@ export default function ReservarPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Check if only barra is available and user prefers mesa
+    if (soloBarraDisponible && preferenciaUbicacion !== 'BARRA') {
+      setError('⚠️ Solo hay lugares disponibles en la barra. ¿Querés confirmar ahí o probamos otra fecha/horario?');
+      return;
+    }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -275,6 +289,44 @@ export default function ReservarPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                  )}
+
+                  {/* Preferencia de ubicación */}
+                  {selectedHora && comensales && (
+                    <div>
+                      <Label className="text-stone-300 font-medium text-lg">¿Prefieres mesa o barra?</Label>
+                      <p className="text-sm text-stone-500 mt-1 mb-3">
+                        Te avisamos si solo hay barra disponible
+                      </p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setPreferenciaUbicacion('MESA')}
+                          className={`
+                            p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2
+                            ${preferenciaUbicacion === 'MESA' 
+                              ? 'border-brand bg-brand/20 text-white' 
+                              : 'border-stone-600 bg-stone-800 text-stone-400 hover:border-stone-500'}
+                          `}
+                        >
+                          <Armchair className="h-8 w-8" />
+                          <span className="font-medium">Mesa</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPreferenciaUbicacion('BARRA')}
+                          className={`
+                            p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2
+                            ${preferenciaUbicacion === 'BARRA' 
+                              ? 'border-brand bg-brand/20 text-white' 
+                              : 'border-stone-600 bg-stone-800 text-stone-400 hover:border-stone-500'}
+                          `}
+                        >
+                          <LayoutDashboard className="h-8 w-8" />
+                          <span className="font-medium">barra</span>
+                        </button>
+                      </div>
                     </div>
                   )}
                 </CardContent>

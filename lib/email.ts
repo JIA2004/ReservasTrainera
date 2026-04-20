@@ -85,31 +85,50 @@ export async function enviarNotificacionDueno(reserva: ReservaInfo): Promise<voi
   const horaFormateada = reserva.hora.substring(0, 5);
   const mesasNombres = getMesasNombres(reserva);
 
+  // Build admin URLs
+  const fechaAdmin = reserva.fecha.toISOString().split('T')[0];
+  const baseAdminUrl = `${APP_URL}/admin`;
+  
+  // Generate action tokens for quick actions (in real app, these would be one-time tokens)
+  const confirmarUrl = `${baseAdminUrl}/reservas/${fechaAdmin}/confirmar/${reserva.id}`;
+  const cancelarUrl = `${baseAdminUrl}/reservas/${fechaAdmin}/cancelar/${reserva.id}`;
+
   try {
     await resend.emails.send({
       from: FROM_EMAIL,
       to: emailDueno,
-      subject: `Nueva reserva - ${reserva.nombre} ${reserva.apellido} (${reserva.comensales}p)`,
+      subject: `🔔 NUEVA RESERVA: ${reserva.nombre} ${reserva.apellido} - ${reserva.comensales}pax`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Se realizó una nueva reserva</h2>
+          <h2 style="color: #333;">🆕 Nueva reserva recibida</h2>
           
-          <div style="background: ${reserva.estado === 'REQUIERE_ATENCION' ? '#fef3c7' : '#f0fdf4'}; 
-                      padding: 16px; border-radius: 8px; margin: 16px 0;">
-            <p><strong>👤 Nombre:</strong> ${reserva.nombre} ${reserva.apellido}</p>
-            <p><strong>📧 Email:</strong> ${reserva.email}</p>
-            <p><strong>📱 Teléfono:</strong> ${reserva.telefono}</p>
+          <div style="background: #f0fdf4; padding: 16px; border-radius: 8px; margin: 16px 0;">
+            <p><strong>👤 Cliente:</strong> ${reserva.nombre} ${reserva.apellido}</p>
+            <p><strong>📧 Email:</strong> <a href="mailto:${reserva.email}">${reserva.email}</a></p>
+            <p><strong>📱 Tel:</strong> <a href="tel:${reserva.telefono}">${reserva.telefono}</a></p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 12px 0;" />
             <p><strong>📅 Fecha:</strong> ${fechaFormateada}</p>
             <p><strong>⏰ Hora:</strong> ${horaFormateada}</p>
             <p><strong>👥 Comensales:</strong> ${reserva.comensales} personas</p>
-            <p><strong>🪑 Mesas sugeridas:</strong> ${mesasNombres}</p>
+            <p><strong>🪑 Tipo preferido:</strong> ${mesasNombres}</p>
             <p><strong>📊 Estado:</strong> ${reserva.estado}</p>
           </div>
           
-          <a href="${APP_URL}/admin/reservas/${reserva.fecha.toISOString().split('T')[0]}" 
-             style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-            Ver en admin →
-          </a>
+          <!-- Action Buttons -->
+          <div style="margin: 24px 0;">
+            <a href="${confirmarUrl}" 
+               style="background: #16a34a; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; margin-right: 12px;">
+              ✅ Confirmar
+            </a>
+            <a href="${cancelarUrl}" 
+               style="background: #dc2626; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+              ❌ Cancelar
+            </a>
+          </div>
+          
+          <p style="color: #666; font-size: 14px;">
+            <a href="${baseAdminUrl}/reservas/${fechaAdmin}">Ver todas las reservas →</a>
+          </p>
         </div>
       `,
     });
