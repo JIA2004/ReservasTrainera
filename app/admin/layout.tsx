@@ -20,7 +20,12 @@ export default function AdminLayout({
     const checkSession = async () => {
       try {
         const res = await fetch('/api/auth/check');
-        setIsLoggedIn(res.ok);
+        if (res.ok) {
+          const data = await res.json();
+          setIsLoggedIn(data.authenticated === true);
+        } else {
+          setIsLoggedIn(false);
+        }
       } catch {
         setIsLoggedIn(false);
       }
@@ -43,10 +48,16 @@ export default function AdminLayout({
     );
   }
 
-  // Si no está logueado, no mostrar contenido (el middleware redirect ya se encargó)
-  // Este código no debería ejecutarse, pero por seguridad verificamos
+  // Si no está logueado, redirigir al login
   if (!isLoggedIn) {
-    return null;
+    if (typeof window !== 'undefined') {
+      window.location.href = '/admin/login';
+    }
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   const NavLink = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => (
