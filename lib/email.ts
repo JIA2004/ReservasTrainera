@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { prisma } from './prisma';
 import { formatDate } from './utils';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -78,7 +79,9 @@ export async function enviarConfirmacionCliente(reserva: ReservaInfo): Promise<v
 }
 
 export async function enviarNotificacionDueno(reserva: ReservaInfo): Promise<void> {
-  const emailDueno = process.env.EMAIL_DUENO;
+  // Get email from database config
+  const config = await prisma.configuracion.findFirst();
+  const emailDueno = config?.emailDueno || process.env.EMAIL_DUENO;
   if (!emailDueno) return;
 
   const fechaFormateada = formatDate(reserva.fecha, "EEEE d 'de' MMMM");
@@ -236,7 +239,9 @@ export async function enviarCancelacionCliente(reserva: ReservaInfo): Promise<vo
 }
 
 export async function enviarNotificacionCancelacionDueno(reserva: ReservaInfo): Promise<void> {
-  const emailDueno = process.env.EMAIL_DUENO;
+  // Get email from database config
+  const config = await prisma.configuracion.findFirst();
+  const emailDueno = config?.emailDueno || process.env.EMAIL_DUENO;
   if (!emailDueno) return;
 
   const fechaFormateada = formatDate(reserva.fecha, "EEEE d 'de' MMMM");
