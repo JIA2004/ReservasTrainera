@@ -14,8 +14,22 @@ export default function AdminLayout({
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Only run session check after client mount and NOT on login page
+  useEffect(() => {
+    if (!isClient) return;
+    
+    // Skip check on login page - let it render
+    if (window.location.pathname === '/admin/login') {
+      setIsLoggedIn(true); // Allow render without auth
+      return;
+    }
+    
     // Verificar sesión al montar
     const checkSession = async () => {
       try {
@@ -31,7 +45,7 @@ export default function AdminLayout({
       }
     };
     checkSession();
-  }, []);
+  }, [isClient]);
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -39,8 +53,11 @@ export default function AdminLayout({
     router.refresh();
   };
 
-  // Mientras verifica la sesión, mostrar loading
-  if (isLoggedIn === null) {
+  // Si es la página de login, renderizar normal (el middleware maneja el acceso)
+  const isLoginPage = typeof window !== 'undefined' && window.location.pathname === '/admin/login';
+  
+  // Mientras verifica la sesión, mostrar loading solo si NO es login page
+  if (isLoggedIn === null && !isLoginPage) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -48,8 +65,8 @@ export default function AdminLayout({
     );
   }
 
-  // Si no está logueado, redirigir al login
-  if (!isLoggedIn) {
+  // Si no está logueado y NO es login page, redirigir
+  if (!isLoggedIn && !isLoginPage) {
     if (typeof window !== 'undefined') {
       window.location.href = '/admin/login';
     }
