@@ -127,15 +127,15 @@ export default function HomePage() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/reservar">
-                <Button size="lg" className="bg-brand text-white hover:bg-brand/90 border-0 px-8 py-6 text-lg font-semibold">
-                  <ChefHat className="mr-2 h-5 w-5" />
+                <Button size="lg" className="bg-brand text-white hover:bg-brand/90 border-0 px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg font-semibold w-full sm:w-auto">
+                  <ChefHat className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Reservar una mesa
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </Link>
               <a href="https://taberna.trainera.com.ar" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-brand px-8 py-6 text-lg bg-black/30">
-                  <UtensilsCrossed className="mr-2 h-5 w-5" />
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-brand px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg bg-black/30 w-full sm:w-auto">
+                  <UtensilsCrossed className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Ver carta
                 </Button>
               </a>
@@ -200,16 +200,16 @@ export default function HomePage() {
                   la gastronomía vasca.
                 </p>
               </div>
-              <div className="mt-8 flex gap-4">
-                <div className="text-center">
+              <div className="mt-8 flex flex-wrap sm:flex-nowrap gap-4 sm:gap-8">
+                <div className="text-center flex-1 min-w-[80px]">
                   <p className="text-3xl font-serif text-brand font-bold">30+</p>
                   <p className="text-stone-500 text-sm">Años de trayectoria</p>
                 </div>
-                <div className="text-center">
+                <div className="text-center flex-1 min-w-[80px]">
                   <p className="text-3xl font-serif text-brand font-bold">25+</p>
                   <p className="text-stone-500 text-sm">Años en Zazpirak Bat</p>
                 </div>
-                <div className="text-center">
+                <div className="text-center flex-1 min-w-[80px]">
                   <p className="text-3xl font-serif text-brand font-bold">2020</p>
                   <p className="text-stone-500 text-sm">Año de fundación</p>
                 </div>
@@ -334,8 +334,8 @@ export default function HomePage() {
             en Rosario. Recomendamos reservar con anticipación.
           </p>
           <Link href="/reservar">
-            <Button size="lg" className="bg-white text-brand hover:bg-white/90 border-0 px-12 py-7 text-lg">
-              <ChefHat className="mr-2 h-5 w-5" />
+            <Button size="lg" className="bg-white text-brand hover:bg-white/90 border-0 px-8 sm:px-12 py-5 sm:py-7 text-base sm:text-lg w-full sm:w-auto">
+              <ChefHat className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Reservar ahora
             </Button>
           </Link>
