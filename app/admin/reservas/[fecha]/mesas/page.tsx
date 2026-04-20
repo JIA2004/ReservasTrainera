@@ -48,6 +48,7 @@ async function getData(fecha: string) {
 
   // Obtener todas las mesas
   const mesas = await prisma.mesa.findMany({
+    where: { activa: true },
     orderBy: [
       { tipo: 'asc' },
       { nombre: 'asc' },

@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { prisma } from '@/lib/prisma';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ArrowLeft, Calendar, Users, AlertCircle, Armchair } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, AlertCircle } from 'lucide-react';
 import { ReservaCard } from './_components/reserva-card';
 
 interface Props {
@@ -86,18 +86,9 @@ export default async function AdminReservasDiaPage({ params }: Props) {
             </p>
           </div>
           
-          <div className="flex items-center gap-4">
-            <Link 
-              href={`/admin/reservas/${fecha}/mesas`}
-              className="text-sm text-brand hover:text-red-700 transition-colors flex items-center gap-1"
-            >
-              <Armchair className="h-4 w-4" />
-              Ver mesas
-            </Link>
-            <Link href="/admin/config" className="text-sm text-gray-500 hover:text-brand transition-colors">
-              Configurar horarios →
-            </Link>
-          </div>
+          <Link href="/admin/config" className="text-sm text-gray-500 hover:text-brand transition-colors">
+            Configurar horarios →
+          </Link>
         </div>
       </div>
 

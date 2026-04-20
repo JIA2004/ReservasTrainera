@@ -20,6 +20,7 @@ interface Mesa {
   nombre: string;
   capacidad: number;
   tipo: 'MESA' | 'BARRA';
+  activa: boolean;
 }
 
 interface Props {
