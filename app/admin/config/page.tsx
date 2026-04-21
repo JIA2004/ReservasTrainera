@@ -89,7 +89,6 @@ export default async function AdminConfigPage() {
             <CapacidadForm 
               toleranciaMinutos={config?.toleranciaMinutos || 10}
               diasAntelacionMax={config?.diasAntelacionMax || 30}
-              emailDueno={config?.emailDueno || ''}
             />
           </div>
         </div>

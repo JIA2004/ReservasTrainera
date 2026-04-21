@@ -7,13 +7,11 @@ import { Button } from '@/components/ui/button';
 interface Props {
   toleranciaMinutos: number;
   diasAntelacionMax: number;
-  emailDueno: string;
 }
 
-export function CapacidadForm({ toleranciaMinutos, diasAntelacionMax, emailDueno }: Props) {
-  const [tolerancia, setTolerancia] = useState(toleranciaMinutos);
+export function CapacidadForm({ toleranciaMinutos, diasAntelacionMax }: Props) {
+  const [tolerancia, setTolerancia] = useState(tolerenciaMinutos);
   const [dias, setDias] = useState(diasAntelacionMax);
-  const [email, setEmail] = useState(emailDueno);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const router = useRouter();
@@ -28,9 +26,8 @@ export function CapacidadForm({ toleranciaMinutos, diasAntelacionMax, emailDueno
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          toleranciaMinutos: parseInt(String(tolerancia)),
+          toleranciaMinutos: parseInt(String(tolerencia)),
           diasAntelacionMax: parseInt(String(dias)),
-          emailDueno: email,
         }),
       });
 
@@ -73,18 +70,6 @@ export function CapacidadForm({ toleranciaMinutos, diasAntelacionMax, emailDueno
           className="w-full mt-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
         />
         <p className="text-xs text-gray-500 mt-1">Cuántos días adelante se puede reservar</p>
-      </div>
-      
-      <div className="md:col-span-2">
-        <label className="text-sm font-medium text-gray-700">Email del dueño</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="trainera@email.com"
-          className="w-full mt-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
-        />
-        <p className="text-xs text-gray-500 mt-1">Recibirás notificaciones de nuevas reservas</p>
       </div>
       
       {message && (
