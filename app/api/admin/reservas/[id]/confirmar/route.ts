@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { enviarConfirmacionCliente } from '@/lib/email';
+import { checkAdminAuth } from '@/lib/admin-auth';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -19,7 +19,6 @@ const HTML_TEMPLATE = (title: string, message: string, color: string, icon: stri
     <tr>
       <td align="center" valign="middle" style="padding: 40px 20px;">
         <div style="max-width: 440px; width: 100%;">
-          <!-- Logo -->
           <div style="text-align: center; margin-bottom: 32px;">
             <h1 style="margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 36px; font-weight: 700; color: #fafaf9; letter-spacing: 3px;">
               TRAINERA
@@ -29,7 +28,6 @@ const HTML_TEMPLATE = (title: string, message: string, color: string, icon: stri
             </p>
           </div>
           
-          <!-- Card -->
           <div style="background: #ffffff; border-radius: 20px; padding: 48px 40px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.25);">
             <div style="width: 80px; height: 80px; background: ${color}; border-radius: 50%; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; font-size: 36px;">
               ${icon}
@@ -61,6 +59,20 @@ const HTML_TEMPLATE = (title: string, message: string, color: string, icon: stri
 `;
 
 export async function GET(request: Request, { params }: Props) {
+  // VERIFICAR AUTH PRIMERO - Solo el admin puede confirmar
+  const authError = await checkAdminAuth();
+  if (authError) {
+    return new NextResponse(
+      HTML_TEMPLATE(
+        'Acceso Denegado',
+        'Necesitás estar autenticado como admin.',
+        '#fee2e2',
+        '🔒'
+      ),
+      { headers: { 'content-type': 'text/html' }, status: 401 }
+    );
+  }
+  
   try {
     const resolvedParams = await params;
     const reservaId = resolvedParams.id;
@@ -87,16 +99,10 @@ export async function GET(request: Request, { params }: Props) {
       data: { estado: 'CONFIRMADA' },
     });
 
-    // Send confirmation email to client
-    await enviarConfirmacionCliente({
-      ...updated,
-      cancelToken: updated.cancelToken,
-    });
-
     return new NextResponse(
       HTML_TEMPLATE(
         'Reserva Confirmada',
-        `La reserva de <strong>${updated.nombre} ${updated.apellido}</strong> para el <strong>${updated.fecha.toLocaleDateString('es-AR')}</strong> a las <strong>${updated.hora}</strong> ha sido confirmada. Se envió un email al cliente.`,
+        `La reserva de <strong>${updated.nombre} ${updated.apellido}</strong> para el <strong>${updated.fecha.toLocaleDateString('es-AR')}</strong> a las <strong>${updated.hora}</strong> ha sido confirmada.`,
         '#dcfce7',
         '✅'
       ),
@@ -107,7 +113,7 @@ export async function GET(request: Request, { params }: Props) {
     return new NextResponse(
       HTML_TEMPLATE(
         'Error Interno',
-        'Hubo un problema al procesar la solicitud. Por favor intentá nuevamente.',
+        'Hubo un problema al procesar la solicitud.',
         '#fef2f2',
         '⚠️'
       ),

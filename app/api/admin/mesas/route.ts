@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { checkAdminAuth } from '@/lib/admin-auth';
 
 export async function GET() {
+  // Verificar auth
+  const authError = await checkAdminAuth();
+  if (authError) return authError;
+
   try {
     const mesas = await prisma.mesa.findMany({
       orderBy: [
@@ -21,6 +26,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // Verificar auth
+  const authError = await checkAdminAuth();
+  if (authError) return authError;
+
   try {
     const body = await request.json();
     const { nombre, capacidad, tipo, activa } = body;
