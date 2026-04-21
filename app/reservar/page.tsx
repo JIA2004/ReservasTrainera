@@ -273,22 +273,44 @@ export default function ReservarPage() {
                   {selectedHora && (
                     <div>
                       <Label className="text-stone-300 font-medium text-lg">Cantidad de comensales</Label>
-                      <Select value={comensales} onValueChange={setComensales}>
+                      <Select value={comensales} onValueChange={(val) => setComensales(val)}>
                         <SelectTrigger className="mt-4 border-stone-600 bg-stone-800 text-white">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-stone-800 border-stone-700">
-                          {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => (
-                            <SelectItem 
-                              key={n} 
-                              value={String(n)}
-                              className="text-stone-200 hover:bg-stone-700"
-                            >
-                              {n} {n === 1 ? 'comensal' : 'comensales'}
-                            </SelectItem>
-                          ))}
+                          {(() => {
+                            const capacidad = disponibilidad[selectedHora] ?? 20;
+                            const maximo = Math.min(capacidad, 20);
+                            if (maximo < 1) {
+                              return (
+                                <div className="p-4 text-center text-stone-400">
+                                  No hay disponibilidad para este horario
+                                </div>
+                              );
+                            }
+                            return Array.from({ length: maximo }, (_, i) => i + 1).map((n) => (
+                              <SelectItem 
+                                key={n} 
+                                value={String(n)}
+                                className="text-stone-200 hover:bg-stone-700"
+                              >
+                                {n} {n === 1 ? 'comensal' : 'comensales'}
+                              </SelectItem>
+                            ));
+                          })()}
                         </SelectContent>
                       </Select>
+                      {(() => {
+                        const capacidad = disponibilidad[selectedHora] ?? 20;
+                        if (capacidad < 20 && capacidad > 0) {
+                          return (
+                            <p className="text-xs text-stone-500 mt-2">
+                              Máximo {capacidad} comensales disponibles para este horario
+                            </p>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   )}
 
