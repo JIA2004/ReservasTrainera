@@ -76,8 +76,8 @@ export async function enviarNotificacionDueno(reserva: ReservaInfo): Promise<voi
   const fechaAdmin = reserva.fecha.toISOString().split('T')[0];
   const baseUrl = `${APP_URL}`;
   
-  const confirmarLink = `${baseUrl}/admin/reservas/${fechaAdmin}/confirmar/${reserva.id}`;
-  const cancelarLink = `${baseUrl}/admin/reservas/${fechaAdmin}/cancelar/${reserva.id}`;
+  const confirmarLink = `${baseUrl}/api/admin/reservas/${reserva.id}/confirmar`;
+  const cancelarLink = `${baseUrl}/api/admin/reservas/${reserva.id}/cancelar`;
 
   console.log('[EMAIL] Enviando email...');
 

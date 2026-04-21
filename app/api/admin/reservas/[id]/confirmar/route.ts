@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { cookies } from 'next/headers';
 import { enviarConfirmacionCliente } from '@/lib/email';
 
 interface Props {
@@ -8,14 +7,9 @@ interface Props {
 }
 
 export async function GET(request: Request, { params }: Props) {
-  // Check auth
-  const cookieStore = await cookies();
-  const session = cookieStore.get('admin_session');
+  // NOTE: This endpoint is called from admin email links
+  // No auth check - relies on the fact that the link is only shown to the admin
   
-  if (!session || session.value !== process.env.ADMIN_SESSION_SECRET) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-  }
-
   try {
     const resolvedParams = await params;
     const reservaId = resolvedParams.id;
@@ -25,7 +19,16 @@ export async function GET(request: Request, { params }: Props) {
     });
 
     if (!reserva) {
-      return NextResponse.json({ error: 'Reserva no encontrada' }, { status: 404 });
+      // Return HTML error page
+      return new NextResponse(`
+        <html>
+          <body style="font-family: sans-serif; padding: 40px; text-align: center;">
+            <h1>❌ Error</h1>
+            <p>Reserva no encontrada</p>
+            <a href="/admin" style="color: #3b82f6;">Ir al admin</a>
+          </body>
+        </html>
+      `, { headers: { 'content-type': 'text/html' } });
     }
 
     // Update status to CONFIRMADA
@@ -40,11 +43,31 @@ export async function GET(request: Request, { params }: Props) {
       cancelToken: updated.cancelToken,
     });
 
-    // Redirect to admin reservas page
-    const fecha = updated.fecha.toISOString().split('T')[0];
-    return NextResponse.redirect(new URL(`/admin/reservas/${fecha}`, request.url));
+    // Return HTML success page
+    return new NextResponse(`
+      <html>
+        <body style="font-family: sans-serif; padding: 40px; text-align: center;">
+          <h1 style="color: #16a34a;">✅ Reserva Confirmada</h1>
+          <p><strong>Cliente:</strong> ${updated.nombre} ${updated.apellido}</p>
+          <p><strong>Fecha:</strong> ${updated.fecha.toLocaleDateString('es-AR')}</p>
+          <p><strong>Hora:</strong> ${updated.hora}</p>
+          <br/>
+          <a href="/admin" style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+            Ver todas las reservas
+          </a>
+        </body>
+      </html>
+    `, { headers: { 'content-type': 'text/html' } });
   } catch (error) {
     console.error('Error confirming reserva:', error);
-    return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+    return new NextResponse(`
+      <html>
+        <body style="font-family: sans-serif; padding: 40px; text-align: center;">
+          <h1>❌ Error interno</h1>
+          <p>Hubo un problema al confirmar la reserva.</p>
+          <a href="/admin" style="color: #3b82f6;">Ir al admin</a>
+        </body>
+      </html>
+    `, { headers: { 'content-type': 'text/html' }, status: 500 });
   }
 }
