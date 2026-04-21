@@ -31,7 +31,7 @@ export default async function AdminConfigPage() {
   const horariosDisponibles = config?.horariosReservas?.split(',').map(h => h.trim()) || ['19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30'];
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-3xl mx-auto px-6 py-8">
       {/* Header */}
       <div className="mb-8">
         <Link
