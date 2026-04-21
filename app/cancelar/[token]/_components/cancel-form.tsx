@@ -7,9 +7,10 @@ import { Loader2, AlertTriangle } from 'lucide-react';
 
 interface Props {
   reservaId: string;
+  cancelToken: string;
 }
 
-export function CancelForm({ reservaId }: Props) {
+export function CancelForm({ reservaId, cancelToken }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -21,6 +22,8 @@ export function CancelForm({ reservaId }: Props) {
     try {
       const res = await fetch(`/api/reservas/${reservaId}/cancelar`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cancelToken }),
       });
 
       if (res.ok) {

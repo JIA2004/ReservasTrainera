@@ -36,6 +36,16 @@ export async function GET(request: Request) {
     );
   }
 
+  // Validate day is open (martes=2 to sábado=6)
+  const diaSemana = fechaDate.getDay();
+  if (diaSemana === 0 || diaSemana === 1) {
+    // Closed days - return empty availability
+    return NextResponse.json({
+      disponibilidad: [],
+      tieneMesas: true,
+    });
+  }
+
   try {
     // Obtener configuración
     let config;

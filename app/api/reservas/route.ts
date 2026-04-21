@@ -2,32 +2,18 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { encontrarMesasDisponibles } from '@/lib/matching';
 import { z } from 'zod';
-import { Reserva, ReservaEstado } from '@prisma/client';
+import { ReservaEstado } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
 const reservaSchema = z.object({
   nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   apellido: z.string().min(2, 'El apellido debe tener al menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
+  email: z.string().email('Email inválido').optional().or(z.literal('')),
   telefono: z.string().regex(/^\+?[0-9\s\-()]{8,20}$/, 'Teléfono inválido'),
   fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida'),
   hora: z.string().regex(/^\d{2}:\d{2}$/, 'Hora inválida'),
   comensales: z.number().int().min(1, 'Mínimo 1 comensal').max(20, 'Máximo 20 comensales'),
 });
-
-// Tipo para reserva sin DB
-interface ReservaFallback {
-  id: string;
-  nombre: string;
-  apellido: string;
-  email: string;
-  telefono: string;
-  fecha: Date;
-  hora: string;
-  comensales: number;
-  estado: string;
-  cancelToken: string;
-}
 
 export async function POST(request: Request) {
   try {
@@ -68,62 +54,39 @@ export async function POST(request: Request) {
       );
     }
 
-    // Intentar crear en DB, si falla crear sin persistencia
-    let reserva: Reserva | ReservaFallback;
-    let dbAvailable = true;
-
-    try {
-      // RACE CONDITION FIX: wrap matching + create en transaction
-      reserva = await prisma.$transaction(async (tx) => {
-        const match = await encontrarMesasDisponibles(tx, fechaReserva, data.hora, data.comensales);
-        
-        if (!match.disponible) {
-          throw new Error(match.mensaje || 'SIN_DISPONIBILIDAD');
-        }
-
-        const created = await tx.reserva.create({
-          data: {
-            nombre: data.nombre,
-            apellido: data.apellido,
-            email: data.email,
-            telefono: data.telefono,
-            fecha: fechaReserva,
-            hora: data.hora,
-            comensales: data.comensales,
-            estado: match.requiereAtencion ? ReservaEstado.REQUIERE_ATENCION : ReservaEstado.PENDIENTE,
-            cancelToken: randomUUID(),
-          },
-        });
-
-        if (match.mesasAsignadas && match.mesasAsignadas.length > 0) {
-          await tx.reservaMesa.createMany({
-            data: match.mesasAsignadas.map((mesa) => ({
-              reservaId: created.id,
-              mesaId: mesa.id,
-            })),
-          });
-        }
-
-        return created;
-      });
-    } catch (dbError) {
-      console.warn('⚠️ DB no disponible, creando reserva sin persistencia');
-      dbAvailable = false;
+    // Create reservation with transaction to prevent race conditions
+    const reserva = await prisma.$transaction(async (tx) => {
+      const match = await encontrarMesasDisponibles(tx, fechaReserva, data.hora, data.comensales);
       
-      // Crear reserva en memoria (sin guardar en DB)
-      reserva = {
-        id: `temp-${Date.now()}`,
-        nombre: data.nombre,
-        apellido: data.apellido,
-        email: data.email,
-        telefono: data.telefono,
-        fecha: fechaReserva,
-        hora: data.hora,
-        comensales: data.comensales,
-estado: 'PENDIENTE',
-        cancelToken: randomUUID(),
-      };
-    }
+      if (!match.disponible) {
+        throw new Error(match.mensaje || 'SIN_DISPONIBILIDAD');
+      }
+
+      const created = await tx.reserva.create({
+        data: {
+          nombre: data.nombre,
+          apellido: data.apellido,
+          email: data.email || '',
+          telefono: data.telefono,
+          fecha: fechaReserva,
+          hora: data.hora,
+          comensales: data.comensales,
+          estado: match.requiereAtencion ? ReservaEstado.REQUIERE_ATENCION : ReservaEstado.PENDIENTE,
+          cancelToken: randomUUID(),
+        },
+      });
+
+      if (match.mesasAsignadas && match.mesasAsignadas.length > 0) {
+        await tx.reservaMesa.createMany({
+          data: match.mesasAsignadas.map((mesa) => ({
+            reservaId: created.id,
+            mesaId: mesa.id,
+          })),
+        });
+      }
+
+      return created;
+    });
 
     // Sin emails - todo se gestiona en /admin
 
@@ -161,7 +124,7 @@ estado: 'PENDIENTE',
     }
 
     return NextResponse.json(
-      { error: 'ERROR', mensaje: 'Error al procesar la reserva' },
+      { error: 'ERROR', mensaje: 'Error al procesar la reserva. Por favor intentá más tarde.' },
       { status: 500 }
     );
   }

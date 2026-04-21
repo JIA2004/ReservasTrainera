@@ -159,7 +159,7 @@ export default async function CancelarPage({ params }: Props) {
           </div>
 
           {/* Cancel form */}
-          <CancelForm reservaId={reserva.id} />
+          <CancelForm reservaId={reserva.id} cancelToken={reserva.cancelToken} />
 
           {/* Back link */}
           <div className="text-center mt-6">

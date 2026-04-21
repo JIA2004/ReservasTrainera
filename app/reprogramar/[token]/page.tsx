@@ -149,6 +149,7 @@ export default async function ReprogramarPage({ params }: Props) {
             <div className="p-6">
               <ReprogramarForm
                 reservaId={reserva.id}
+                cancelToken={reserva.cancelToken}
                 comensales={reserva.comensales}
                 horarios={horarios}
                 maxDiasAnticipacion={config?.diasAntelacionMax || 30}

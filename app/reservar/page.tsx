@@ -109,6 +109,13 @@ const emailPlaceholder = '';
       return;
     }
 
+    // NEW: Validate capacity before submitting
+    const capacidad = disponibilidad[selectedHora] ?? 0;
+    if (capacidad < parseInt(comensales)) {
+      setError(`No hay suficiente capacidad. Máximo ${capacidad} personas para este horario.`);
+      return;
+    }
+
     setLoading(true);
 
     try {

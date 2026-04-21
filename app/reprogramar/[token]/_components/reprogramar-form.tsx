@@ -12,12 +12,13 @@ import { Loader2, CalendarDays, Clock } from 'lucide-react';
 
 interface Props {
   reservaId: string;
+  cancelToken: string;
   comensales: number;
   horarios: string[];
   maxDiasAnticipacion: number;
 }
 
-export function ReprogramarForm({ reservaId, comensales, horarios, maxDiasAnticipacion }: Props) {
+export function ReprogramarForm({ reservaId, cancelToken, comensales, horarios, maxDiasAnticipacion }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
@@ -80,6 +81,7 @@ export function ReprogramarForm({ reservaId, comensales, horarios, maxDiasAntici
         body: JSON.stringify({
           fecha: format(selectedDate, 'yyyy-MM-dd'),
           hora: selectedHora,
+          cancelToken,
         }),
       });
 
