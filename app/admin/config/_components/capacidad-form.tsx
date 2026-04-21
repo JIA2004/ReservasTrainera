@@ -9,8 +9,10 @@ interface Props {
   diasAntelacionMax: number;
 }
 
-export function CapacidadForm({ toleranciaMinutos, diasAntelacionMax }: Props) {
-  const [tolerancia, setTolerancia] = useState(tolerenciaMinutos);
+export function CapacidadForm(props: Props) {
+  const toleranciaMinutos = props.toleranciaMinutos;
+  const diasAntelacionMax = props.diasAntelacionMax;
+  const [tolerancia, setTolerancia] = useState(toleranciaMinutos);
   const [dias, setDias] = useState(diasAntelacionMax);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
