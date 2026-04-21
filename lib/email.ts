@@ -82,6 +82,7 @@ export async function enviarNotificacionDueno(reserva: ReservaInfo): Promise<voi
   console.log('[EMAIL] Enviando email...');
 
   try {
+    console.log('[EMAIL] Llamando a resend.emails.send...');
     const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: adminEmail,
@@ -115,7 +116,9 @@ export async function enviarNotificacionDueno(reserva: ReservaInfo): Promise<voi
       `,
     });
 
-    console.log('[EMAIL] Resultado RAW:', JSON.stringify(result));
+    console.log('[EMAIL] 📬 Resultado recibido:', JSON.stringify(result));
+    console.log('[EMAIL] data:', result.data);
+    console.log('[EMAIL] error:', result.error);
     
     if (result.error) {
       console.error('[EMAIL] ERROR en respuesta:', result.error);
