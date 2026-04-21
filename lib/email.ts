@@ -7,8 +7,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // IMPORTANT: For free tier, you can ONLY send to your registered email (@gmail.com, etc.)
 // For production, verify a domain in Resend dashboard
 const FROM_EMAIL = process.env.EMAIL_FROM || 'onboarding@resend.dev';
-// Priority: env var, then Vercel auto-detect, then fallback
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://trainera-reservas.vercel.app';
+// Hardcoded for production - change here if domain changes
+const APP_URL = 'https://trainera-reservas.vercel.app';
 
 interface ReservaInfo {
   id: string;
