@@ -82,7 +82,17 @@ export async function enviarNotificacionDueno(reserva: ReservaInfo): Promise<voi
   // Get email from database config
   const config = await prisma.configuracion.findFirst();
   const emailDueno = config?.emailDueno || process.env.EMAIL_DUENO;
-  if (!emailDueno) return;
+  
+  console.log('[EMAIL] Intentando enviar a admin:', { 
+    emailDueno, 
+    dbConfig: config?.emailDueno,
+    envFallback: !!process.env.EMAIL_DUENO 
+  });
+  
+  if (!emailDueno) {
+    console.log('[EMAIL] ⚠️ No hay email configurado para notificar al admin');
+    return;
+  }
 
   const fechaFormateada = formatDate(reserva.fecha, "EEEE d 'de' MMMM");
   const horaFormateada = reserva.hora.substring(0, 5);
