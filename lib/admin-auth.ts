@@ -9,13 +9,20 @@ export async function verifyAdminSession(): Promise<boolean> {
     const cookieStore = await cookies();
     const session = cookieStore.get('admin_session');
     
+    console.log('verifyAdminSession - cookie:', session?.value ? 'exists' : 'missing');
+    console.log('verifyAdminSession - ENV:', process.env.ADMIN_PASSWORD ? 'exists' : 'missing');
+    
     if (!session?.value) {
+      console.log('verifyAdminSession - no cookie');
       return false;
     }
     
-    // Simple comparison with password
-    return session.value === process.env.ADMIN_PASSWORD;
-  } catch {
+    const match = session.value === process.env.ADMIN_PASSWORD;
+    console.log('verifyAdminSession - match:', match);
+    
+    return match;
+  } catch (e) {
+    console.log('verifyAdminSession - error:', e);
     return false;
   }
 }

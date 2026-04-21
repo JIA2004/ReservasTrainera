@@ -54,14 +54,18 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({ success: true });
     
-    // Set simple session cookie
-    response.cookies.set('admin_session', process.env.ADMIN_PASSWORD!, {
+    // Set cookie with proper settings for Vercel
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict' as const,
       maxAge: 60 * 60 * 24 * 7, // 1 week
-      path: '/', // Important: scope to entire site
-    });
+      path: '/',
+    };
+    
+    console.log('Cookie options:', cookieOptions, 'ENV:', process.env.NODE_ENV);
+    
+    response.cookies.set('admin_session', process.env.ADMIN_PASSWORD!, cookieOptions);
 
     console.log('Login successful, cookie set');
 
