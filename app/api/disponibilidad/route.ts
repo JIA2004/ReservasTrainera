@@ -154,8 +154,8 @@ async function obtenerCapacidadDisponible(fechaStr: string, hora: string) {
     };
   }
 
-  // Calcular capacidad total disponible
-  const capacidad = Math.max(mesasLibres.reduce((sum, m) => sum + m.capacidad, 0), 1);
+  // Calcular capacidad total disponible (sin Math.max falsificador)
+  const capacidad = mesasLibres.reduce((sum, m) => sum + m.capacidad, 0);
 
   return { 
     capacidad,

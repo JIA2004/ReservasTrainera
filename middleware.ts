@@ -9,11 +9,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Redireccionar al login si no está logueado (excepto /admin/login)
+  // Verificar sesión - formato de cookie должна tener firma (value.signature)
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
     const session = request.cookies.get('admin_session');
 
-    if (!session || session.value !== process.env.ADMIN_SESSION_SECRET) {
+    // Verificar formato básico (debe tener al menos un punto para la firma)
+    if (!session?.value || !session.value.includes('.')) {
       const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('from', pathname);
       return NextResponse.redirect(loginUrl);

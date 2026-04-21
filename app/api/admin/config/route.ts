@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { cookies } from 'next/headers';
 
 export async function GET() {
+  // Verificar autenticación
+  const cookieStore = await cookies();
+  const session = cookieStore.get('admin_session');
+  
+  if (!session || session.value !== process.env.ADMIN_SESSION_SECRET) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  }
   try {
     const config = await prisma.configuracion.findFirst();
     
@@ -23,6 +31,13 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
+  // Verificar autenticación
+  const cookieStore = await cookies();
+  const session = cookieStore.get('admin_session');
+  
+  if (!session || session.value !== process.env.ADMIN_SESSION_SECRET) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  }
   try {
     const body = await request.json();
     

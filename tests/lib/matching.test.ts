@@ -233,9 +233,12 @@ describe('Matching Logic - Tests Unitarios', () => {
     it('debería retornar 0 cuando no hay mesas libres', () => {
       const mesasLibres: { id: string; capacidad: number; disponible: boolean }[] = [];
 
-      const capacidad = Math.max(mesasLibres.reduce((sum, m) => sum + m.capacidad, 0), 1);
+      // Si no hay mesas libres, capacidad debe ser 0 (NO min 1)
+      const capacidad = mesasLibres
+        .filter((m) => m.disponible)
+        .reduce((sum, m) => sum + m.capacidad, 0);
 
-      expect(capacidad).toBe(1); // Mínimo 1
+      expect(capacidad).toBe(0); // Correcto: 0 cuando no hay mesas
     });
   });
 });

@@ -7,6 +7,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const body = await request.json();
+    const { cancelToken } = body;
     const { id } = await params;
     
     // Obtener la reserva
@@ -23,6 +25,14 @@ export async function POST(
       return NextResponse.json(
         { error: 'Reserva no encontrada' },
         { status: 404 }
+      );
+    }
+
+    // IDOR FIX: Verificar cancelToken antes de permitir cancelación
+    if (!cancelToken || reserva.cancelToken !== cancelToken) {
+      return NextResponse.json(
+        { error: 'Token de cancelación inválido' },
+        { status: 401 }
       );
     }
 

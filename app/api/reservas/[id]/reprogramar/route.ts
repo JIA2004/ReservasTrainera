@@ -9,7 +9,7 @@ export async function POST(
 ) {
   try {
     const body = await request.json();
-    const { fecha, hora } = body;
+    const { fecha, hora, cancelToken } = body;
     const { id } = await params;
 
     // Obtener la reserva actual
@@ -26,6 +26,14 @@ export async function POST(
       return NextResponse.json(
         { error: 'Reserva no encontrada' },
         { status: 404 }
+      );
+    }
+
+    // IDOR FIX: Verificar cancelToken antes de permitir reprogramación
+    if (!cancelToken || reservaActual.cancelToken !== cancelToken) {
+      return NextResponse.json(
+        { error: 'Token de cancelación inválido' },
+        { status: 401 }
       );
     }
 

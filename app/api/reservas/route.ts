@@ -73,35 +73,39 @@ export async function POST(request: Request) {
     let dbAvailable = true;
 
     try {
-      // Intentar con DB
-      const match = await encontrarMesasDisponibles(prisma, fechaReserva, data.hora, data.comensales);
-      
-      if (!match.disponible) {
-        throw new Error(match.mensaje || 'SIN_DISPONIBILIDAD');
-      }
+      // RACE CONDITION FIX: wrap matching + create en transaction
+      reserva = await prisma.$transaction(async (tx) => {
+        const match = await encontrarMesasDisponibles(tx, fechaReserva, data.hora, data.comensales);
+        
+        if (!match.disponible) {
+          throw new Error(match.mensaje || 'SIN_DISPONIBILIDAD');
+        }
 
-      reserva = await prisma.reserva.create({
-        data: {
-          nombre: data.nombre,
-          apellido: data.apellido,
-          email: data.email,
-          telefono: data.telefono,
-          fecha: fechaReserva,
-          hora: data.hora,
-          comensales: data.comensales,
-          estado: match.requiereAtencion ? ReservaEstado.REQUIERE_ATENCION : ReservaEstado.PENDIENTE,
-          cancelToken: randomUUID(),
-        },
-      });
-
-      if (match.mesasAsignadas && match.mesasAsignadas.length > 0) {
-        await prisma.reservaMesa.createMany({
-          data: match.mesasAsignadas.map((mesa) => ({
-            reservaId: reserva.id,
-            mesaId: mesa.id,
-          })),
+        const created = await tx.reserva.create({
+          data: {
+            nombre: data.nombre,
+            apellido: data.apellido,
+            email: data.email,
+            telefono: data.telefono,
+            fecha: fechaReserva,
+            hora: data.hora,
+            comensales: data.comensales,
+            estado: match.requiereAtencion ? ReservaEstado.REQUIERE_ATENCION : ReservaEstado.PENDIENTE,
+            cancelToken: randomUUID(),
+          },
         });
-      }
+
+        if (match.mesasAsignadas && match.mesasAsignadas.length > 0) {
+          await tx.reservaMesa.createMany({
+            data: match.mesasAsignadas.map((mesa) => ({
+              reservaId: created.id,
+              mesaId: mesa.id,
+            })),
+          });
+        }
+
+        return created;
+      });
     } catch (dbError) {
       console.warn('⚠️ DB no disponible, creando reserva sin persistencia');
       dbAvailable = false;

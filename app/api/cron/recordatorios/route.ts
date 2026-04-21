@@ -10,10 +10,20 @@ export async function GET(request: Request) {
   }
 
   try {
+    // TIMEZONE FIX: usar timestamps consistentes (no Date.parse de strings)
     const ahora = new Date();
     const enDosHoras = new Date(ahora.getTime() + 2 * 60 * 60 * 1000);
 
-    // Formatear hora actual para comparación
+    // Extraer fecha LOCAL para comparación con DB
+    const año = ahora.getFullYear();
+    const mes = ahora.getMonth();
+    const dia = ahora.getDate();
+    
+    // Crear fechas locales (sin UTC)
+    const fechaInicio = new Date(año, mes, dia);
+    const fechaFin = new Date(enDosHoras.getFullYear(), enDosHoras.getMonth(), enDosHoras.getDate());
+
+    // Formatear hora local para comparación
     const horaActual = `${ahora.getHours().toString().padStart(2, '0')}:${ahora.getMinutes().toString().padStart(2, '0')}`;
     const horaLimite = `${enDosHoras.getHours().toString().padStart(2, '0')}:${enDosHoras.getMinutes().toString().padStart(2, '0')}`;
 
@@ -21,8 +31,8 @@ export async function GET(request: Request) {
     const reservas = await prisma.reserva.findMany({
       where: {
         fecha: {
-          gte: new Date(ahora.toDateString()),
-          lte: new Date(enDosHoras.toDateString()),
+          gte: fechaInicio,
+          lte: fechaFin,
         },
         hora: {
           gte: horaActual,

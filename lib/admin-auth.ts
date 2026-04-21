@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { verifySignedCookie } from '@/lib/cookie-utils';
 
 /**
  * Verifica si el request viene de un admin autenticado
@@ -13,8 +14,9 @@ export async function verifyAdminSession(): Promise<boolean> {
       return false;
     }
     
-    // Comparar directamente con el secret
-    return session.value === process.env.ADMIN_SESSION_SECRET;
+    // Verificar firma de la cookie (previene tampering)
+    const verified = verifySignedCookie(session.value, process.env.ADMIN_SESSION_SECRET!);
+    return verified !== null;
   } catch {
     return false;
   }
