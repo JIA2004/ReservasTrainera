@@ -3,11 +3,12 @@ export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, startOfWeek, endOfWeek, addMonths, subMonths, isToday } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, startOfWeek, endOfWeek, addMonths, subMonths, isToday, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { ChevronLeft, ChevronRight, Calendar, Users, Armchair, MapPin } from 'lucide-react';
+import { headers } from 'next/headers';
 
 async function getReservasDelMes(fecha: Date) {
   const start = startOfMonth(fecha);
@@ -38,7 +39,11 @@ async function getReservasDelMes(fecha: Date) {
   return countByDay;
 }
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ m?: string }>;
+}) {
   // Check auth directly
   const cookieStore = await cookies();
   const session = cookieStore.get('admin_session');
@@ -48,7 +53,11 @@ export default async function AdminDashboardPage() {
   }
 
   const today = new Date();
-  const selectedMonth = today;
+  const params = await searchParams;
+  let selectedMonth = today;
+  if (params.m && /^\d{4}-\d{2}$/.test(params.m)) {
+    selectedMonth = parseISO(params.m + '-01');
+  }
   
   const reservasDelMes = await getReservasDelMes(selectedMonth);
   
@@ -141,12 +150,26 @@ export default async function AdminDashboardPage() {
               {format(selectedMonth, 'MMMM yyyy', { locale: es })}
             </h2>
           </div>
-          <Link 
-            href="/admin"
-            className="text-sm text-stone-500 hover:text-stone-700"
-          >
-            Hoy
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/admin?m=${format(subMonths(selectedMonth, 1), 'yyyy-MM')}`}
+              className="p-2 hover:bg-stone-200 rounded-lg transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 text-stone-600" />
+            </Link>
+            <Link 
+              href="/admin"
+              className="px-3 py-1 text-sm text-stone-600 hover:bg-stone-200 rounded-lg transition-colors"
+            >
+              Hoy
+            </Link>
+            <Link
+              href={`/admin?m=${format(addMonths(selectedMonth, 1), 'yyyy-MM')}`}
+              className="p-2 hover:bg-stone-200 rounded-lg transition-colors"
+            >
+              <ChevronRight className="w-5 h-5 text-stone-600" />
+            </Link>
+          </div>
         </div>
 
         {/* Day Headers */}
