@@ -9,11 +9,9 @@ interface Props {
   diasAntelacionMax: number;
 }
 
-export function CapacidadForm(props: Props) {
-  const toleranciaMinutos = props.toleranciaMinutos;
-  const diasAntelacionMax = props.diasAntelacionMax;
-  const [tolerancia, setTolerancia] = useState(toleranciaMinutos);
-  const [dias, setDias] = useState(diasAntelacionMax);
+export function CapacidadForm({ toleranciaMinutos, diasAntelacionMax }: Props) {
+  const [toleranciaVal, setToleranciaVal] = useState(Number(toleranciaMinutos));
+  const [diasVal, setDiasVal] = useState(Number(diasAntelacionMax));
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const router = useRouter();
@@ -28,8 +26,8 @@ export function CapacidadForm(props: Props) {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          toleranciaMinutos: parseInt(String(tolerencia)),
-          diasAntelacionMax: parseInt(String(dias)),
+          toleranciaMinutos: toleranciaVal,
+          diasAntelacionMax: diasVal,
         }),
       });
 
@@ -52,8 +50,8 @@ export function CapacidadForm(props: Props) {
         <label className="text-sm font-medium text-gray-700">Tolerancia (minutos)</label>
         <input
           type="number"
-          value={tolerancia}
-          onChange={(e) => setTolerancia(Number(e.target.value))}
+          value={toleranciaVal}
+          onChange={(e) => setToleranciaVal(Number(e.target.value))}
           min={0}
           max={30}
           className="w-full mt-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
@@ -65,8 +63,8 @@ export function CapacidadForm(props: Props) {
         <label className="text-sm font-medium text-gray-700">Días de anticipación máxima</label>
         <input
           type="number"
-          value={dias}
-          onChange={(e) => setDias(Number(e.target.value))}
+          value={diasVal}
+          onChange={(e) => setDiasVal(Number(e.target.value))}
           min={1}
           max={90}
           className="w-full mt-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
