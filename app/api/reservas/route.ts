@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { encontrarMesasDisponibles } from '@/lib/matching';
-import { enviarConfirmacionCliente } from '@/lib/email';
 import { z } from 'zod';
 import { Reserva, ReservaEstado } from '@prisma/client';
 import { randomUUID } from 'crypto';
@@ -117,20 +116,12 @@ export async function POST(request: Request) {
         fecha: fechaReserva,
         hora: data.hora,
         comensales: data.comensales,
-        estado: 'PENDIENTE',
+estado: 'PENDIENTE',
         cancelToken: randomUUID(),
       };
     }
 
-    // Enviar solo email de confirmación al cliente (no al admin)
-    // El owner ve las reservas en /admin
-    if (dbAvailable) {
-      try {
-        enviarConfirmacionCliente(reserva as unknown as Parameters<typeof enviarConfirmacionCliente>[0]);
-      } catch (emailError) {
-        console.warn('⚠️ Error enviando email:', emailError);
-      }
-    }
+    // Sin emails - todo se gestiona en /admin
 
     return NextResponse.json({
       success: true,
