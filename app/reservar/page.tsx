@@ -27,7 +27,8 @@ export default function ReservarPage() {
   const [comensales, setComensales] = useState<string>('2');
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
-  const [email, setEmail] = useState('');
+  // Email removed from UI - using placeholder for API compatibility
+const emailPlaceholder = '';
   const [telefono, setTelefono] = useState('');
 
   // Data state
@@ -97,12 +98,6 @@ export default function ReservarPage() {
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Por favor ingresa un email válido');
-      return;
-    }
-
     const telefonoRegex = /^\+?[0-9\s\-()]{8,20}$/;
     if (!telefonoRegex.test(telefono)) {
       setError('Por favor ingresa un teléfono válido');
@@ -123,7 +118,6 @@ export default function ReservarPage() {
         body: JSON.stringify({
           nombre,
           apellido,
-          email,
           telefono,
           fecha: format(selectedDate, 'yyyy-MM-dd'),
           hora: selectedHora,
@@ -386,21 +380,6 @@ export default function ReservarPage() {
                         className="mt-3 border-stone-600 bg-stone-800 text-white placeholder:text-stone-500"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="email" className="text-stone-300 font-medium">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="tu@email.com"
-                      required
-                      className="mt-3 border-stone-600 bg-stone-800 text-white placeholder:text-stone-500"
-                    />
-                    <p className="text-xs text-stone-500 mt-2">
-                      Te enviaremos la confirmación a este email
-                    </p>
                   </div>
                   <div>
                     <Label htmlFor="telefono" className="text-stone-300 font-medium">Teléfono</Label>
