@@ -7,7 +7,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // IMPORTANT: For free tier, you can ONLY send to your registered email (@gmail.com, etc.)
 // For production, verify a domain in Resend dashboard
 const FROM_EMAIL = process.env.EMAIL_FROM || 'onboarding@resend.dev';
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+// Priority: env var, then Vercel auto-detect, then fallback
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://trainera-reservas.vercel.app';
 
 interface ReservaInfo {
   id: string;
@@ -86,33 +87,141 @@ export async function enviarNotificacionDueno(reserva: ReservaInfo): Promise<voi
     const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: adminEmail,
-      subject: `🔔 NUEVA RESERVA: ${reserva.nombre} ${reserva.apellido} - ${reserva.comensales}p`,
+      subject: `🔔 NUEVA RESERVA: ${reserva.nombre} ${reserva.apellido} - ${reserva.comensales}p en Trainera`,
       html: `
-        <div style="font-family: sans-serif; max-width: 600px;">
-          <h2 style="color: #16a34a;">🆕 Nueva reserva</h2>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body style="margin: 0; padding: 0; background-color: #fafaf9; font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fafaf9;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <!-- Main Card -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 520px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 32px; text-align: center;">
+              <h1 style="margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 28px; font-weight: 700; color: #fafaf9; letter-spacing: 0.5px;">
+                TRAINERA
+              </h1>
+              <p style="margin: 8px 0 0; font-size: 13px; color: #a8a29e; font-weight: 300; letter-spacing: 2px; text-transform: uppercase;">
+                Cocina Vasca
+              </p>
+            </td>
+          </tr>
           
-          <div style="background: #f0fdf4; padding: 16px; border-radius: 8px; margin: 16px 0;">
-            <p><strong>👤:</strong> ${reserva.nombre} ${reserva.apellido}</p>
-            <p><strong>📧:</strong> ${reserva.email}</p>
-            <p><strong>📱:</strong> ${reserva.telefono}</p>
-            <hr/>
-            <p><strong>📅:</strong> ${fechaFormateada}</p>
-            <p><strong>⏰:</strong> ${horaFormateada}</p>
-            <p><strong>👥:</strong> ${reserva.comensales} personas</p>
-            <p><strong>📊:</strong> ${reserva.estado}</p>
-          </div>
+          <!-- Alert Badge -->
+          <tr>
+            <td style="padding: 24px 32px 0; text-align: center;">
+              <span style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; letter-spacing: 0.5px;">
+                🆕 NUEVA RESERVA
+              </span>
+            </td>
+          </tr>
           
-          <div style="margin: 24px 0;">
-            <a href="${confirmarLink}" 
-               style="background: #16a34a; color: white; padding: 14px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              ✅ Confirmar
-            </a>
-            <a href="${cancelarLink}" 
-               style="background: #dc2626; color: white; padding: 14px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-left: 12px;">
-              ❌ Cancelar
-            </a>
-          </div>
-        </div>
+          <!-- Main Content -->
+          <tr>
+            <td style="padding: 28px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <!-- Client Info -->
+                <tr>
+                  <td style="padding: 20px; background: #fef2f2; border-radius: 12px; border-left: 4px solid #dc2626;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="padding-bottom: 8px;">
+                          <span style="font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 1px; text-transform: uppercase;">Cliente</span>
+                          <h3 style="margin: 4px 0 0; font-size: 18px; font-weight: 600; color: #1c1917;">${reserva.nombre} ${reserva.apellido}</h3>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 12px;">
+                          <span style="font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 1px; text-transform: uppercase;">Contacto</span>
+                          <p style="margin: 4px 0 0; font-size: 14px; color: #44403c;">
+                            📧 ${reserva.email} &nbsp;•&nbsp; 📱 ${reserva.telefono}
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- Reservation Details -->
+                <tr>
+                  <td style="padding-top: 24px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" style="background: #fafaf9; border-radius: 12px;">
+                      <tr>
+                        <td style="padding: 16px 20px; border-bottom: 1px solid #e7e5e4;">
+                          <span style="font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 1px; text-transform: uppercase;">Fecha</span>
+                          <p style="margin: 4px 0 0; font-size: 16px; font-weight: 600; color: #1c1917;">${fechaFormateada}</p>
+                        </td>
+                        <td style="padding: 16px 20px; border-bottom: 1px solid #e7e5e4; border-left: 1px solid #e7e5e4;">
+                          <span style="font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 1px; text-transform: uppercase;">Hora</span>
+                          <p style="margin: 4px 0 0; font-size: 16px; font-weight: 600; color: #1c1917;">${horaFormateada}</p>
+                        </td>
+                        <td style="padding: 16px 20px; border-bottom: 1px solid #e7e5e4; border-left: 1px solid #e7e5e4;">
+                          <span style="font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 1px; text-transform: uppercase;">Comensales</span>
+                          <p style="margin: 4px 0 0; font-size: 16px; font-weight: 600; color: #1c1917;">${reserva.comensales} personas</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- Status -->
+                <tr>
+                  <td style="padding-top: 16px; text-align: center;">
+                    <span style="display: inline-block; background: #fef3c7; color: #92400e; padding: 6px 16px; border-radius: 6px; font-size: 12px; font-weight: 500;">
+                      Estado: ${reserva.estado}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Action Buttons -->
+          <tr>
+            <td style="padding: 24px 32px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="${confirmarLink}" 
+                       style="display: inline-block; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-size: 15px; font-weight: 600; box-shadow: 0 4px 12px rgba(22,163,74,0.3);">
+                      ✅ Confirmar Reserva
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top: 12px;">
+                    <a href="${cancelarLink}" 
+                       style="display: inline-block; background: #ffffff; color: #dc2626; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-size: 15px; font-weight: 500; border: 2px solid #fecaca;">
+                      ❌ Cancelar Reserva
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background: #fafaf9; padding: 24px 32px; text-align: center; border-top: 1px solid #e7e5e4;">
+              <p style="margin: 0; font-size: 12px; color: #78716c;">
+                © 2026 Trainera · Cocina Vasca<br>
+                <a href="${baseUrl}/admin" style="color: #dc2626;">Panel de Admin</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
       `,
     });
 
