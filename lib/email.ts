@@ -30,8 +30,10 @@ export async function enviarConfirmacionCliente(reserva: ReservaInfo): Promise<v
   const fechaFormateada = formatDate(reserva.fecha, "EEEE d 'de' MMMM");
   const horaFormateada = reserva.hora.substring(0, 5);
 
+  console.log('[EMAIL] Enviando confirmación al cliente:', reserva.email);
+
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: reserva.email,
       subject: `Tu reserva en Trainera está confirmada 📅`,
@@ -73,41 +75,42 @@ export async function enviarConfirmacionCliente(reserva: ReservaInfo): Promise<v
         </div>
       `,
     });
+    
+    console.log('[EMAIL] ✅ Cliente confirmado. Resend response:', JSON.stringify(result));
   } catch (error) {
-    console.error('Error sending confirmation email:', error);
+    console.error('[EMAIL] ❌ Error enviando confirmación:', error);
   }
 }
 
 export async function enviarNotificacionDueno(reserva: ReservaInfo): Promise<void> {
-  // Get email from database config
   const config = await prisma.configuracion.findFirst();
   const emailDueno = config?.emailDueno || process.env.EMAIL_DUENO;
   
-  console.log('[EMAIL] Intentando enviar a admin:', { 
+  console.log('[EMAIL] === INICIO NOTIFICACION AL ADMIN ===');
+  console.log('[EMAIL] Email配置:', { 
     emailDueno, 
-    dbConfig: config?.emailDueno,
-    envFallback: !!process.env.EMAIL_DUENO 
+    dbEmail: config?.emailDueno,
+    envEmail: !!process.env.EMAIL_DUENO,
+    resendKey: !!process.env.RESEND_API_KEY
   });
   
   if (!emailDueno) {
-    console.log('[EMAIL] ⚠️ No hay email configurado para notificar al admin');
+    console.log('[EMAIL] ⚠️ No hay email configurado - abortando');
     return;
   }
-
+  
   const fechaFormateada = formatDate(reserva.fecha, "EEEE d 'de' MMMM");
   const horaFormateada = reserva.hora.substring(0, 5);
   const mesasNombres = getMesasNombres(reserva);
-
-  // Build admin URLs
   const fechaAdmin = reserva.fecha.toISOString().split('T')[0];
   const baseAdminUrl = `${APP_URL}/admin`;
-  
-  // Generate action tokens for quick actions (in real app, these would be one-time tokens)
   const confirmarUrl = `${baseAdminUrl}/reservas/${fechaAdmin}/confirmar/${reserva.id}`;
   const cancelarUrl = `${baseAdminUrl}/reservas/${fechaAdmin}/cancelar/${reserva.id}`;
 
+  console.log('[EMAIL] Enviando notificación al admin:', emailDueno);
+
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: emailDueno,
       subject: `🔔 NUEVA RESERVA: ${reserva.nombre} ${reserva.apellido} - ${reserva.comensales}pax`,
@@ -123,11 +126,10 @@ export async function enviarNotificacionDueno(reserva: ReservaInfo): Promise<voi
             <p><strong>📅 Fecha:</strong> ${fechaFormateada}</p>
             <p><strong>⏰ Hora:</strong> ${horaFormateada}</p>
             <p><strong>👥 Comensales:</strong> ${reserva.comensales} personas</p>
-            <p><strong>🪑 Tipo preferido:</strong> ${mesasNombres}</p>
+            <p><strong>🪑 Tipo:</strong> ${mesasNombres}</p>
             <p><strong>📊 Estado:</strong> ${reserva.estado}</p>
           </div>
           
-          <!-- Action Buttons -->
           <div style="margin: 24px 0;">
             <a href="${confirmarUrl}" 
                style="background: #16a34a; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; margin-right: 12px;">
@@ -138,15 +140,14 @@ export async function enviarNotificacionDueno(reserva: ReservaInfo): Promise<voi
               ❌ Cancelar
             </a>
           </div>
-          
-          <p style="color: #666; font-size: 14px;">
-            <a href="${baseAdminUrl}/reservas/${fechaAdmin}">Ver todas las reservas →</a>
-          </p>
         </div>
       `,
     });
+    
+    console.log('[EMAIL] ✅ Resultado:', JSON.stringify(result));
+    console.log('[EMAIL] === FIN NOTIFICACION ===');
   } catch (error) {
-    console.error('Error sending owner notification:', error);
+    console.error('[EMAIL] ❌ Error:', error);
   }
 }
 
@@ -161,47 +162,18 @@ export async function enviarRecordatorio(reserva: ReservaInfo): Promise<void> {
       subject: `Tu reserva en Trainera es en 2 horas ⏰`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="color: #333;">¡Hola ${reserva.nombre}!</h1>
+          <h1>¡Hola ${reserva.nombre}!</h1>
+          <div style="background: #fef3c7; padding: 24px; border-radius: 8px;">
+            <h2>⏰ Tu reserva es en 2 horas</h2>
+            <p><strong>📅 ${fechaFormateada}</strong></p>
+            <p><strong>⏰ ${horaFormateada}</strong></p>
+            <p><strong>👥 ${reserva.comensales} comensales</strong></p>
           </div>
-          
-          <div style="background: #fef3c7; padding: 24px; border-radius: 8px; margin-bottom: 24px; text-align: center;">
-            <h2 style="color: #333; margin-top: 0;">⏰ Tu reserva es en 2 horas</h2>
-            <p style="font-size: 18px; margin-bottom: 8px;">
-              <strong>📅 ${fechaFormateada}</strong>
-            </p>
-            <p style="font-size: 18px; margin-bottom: 8px;">
-              <strong>⏰ ${horaFormateada}</strong>
-            </p>
-            <p style="font-size: 18px;">
-              <strong>👥 ${reserva.comensales} comensales</strong>
-            </p>
-          </div>
-          
-          <p style="color: #666; font-size: 16px; text-align: center;">
-            ¿Todo bien con tu asistencia?
-          </p>
-          
-          <div style="text-align: center; margin: 24px 0;">
-            <a href="${APP_URL}/cancelar/${reserva.cancelToken}" 
-               style="background: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 0 8px;">
-              Cancelar reserva
-            </a>
-            <a href="${APP_URL}/reprogramar/${reserva.cancelToken}" 
-               style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 0 8px;">
-              Reprogramar
-            </a>
-          </div>
-          
-          <p style="color: #666; font-size: 16px; text-align: center;">
-            ¡Te esperamos!<br/>
-            <strong>Trainera - Cocina Vasca</strong>
-          </p>
         </div>
       `,
     });
   } catch (error) {
-    console.error('Error sending reminder email:', error);
+    console.error('Error sending reminder:', error);
   }
 }
 
@@ -216,40 +188,20 @@ export async function enviarCancelacionCliente(reserva: ReservaInfo): Promise<vo
       subject: `Tu reserva en Trainera ha sido cancelada`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="color: #333;">¡Hola ${reserva.nombre}!</h1>
-          </div>
-          
-          <div style="background: #fee2e2; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
-            <h2 style="color: #991b1b; margin-top: 0;">Tu reserva ha sido cancelada</h2>
+          <h1>¡Hola ${reserva.nombre}!</h1>
+          <div style="background: #fee2e2; padding: 24px; border-radius: 8px;">
+            <h2>Tu reserva ha sido cancelada</h2>
             <p>La reserva para el <strong>${fechaFormateada} a las ${horaFormateada}</strong> ha sido cancelada.</p>
           </div>
-          
-          <p style="color: #666; font-size: 16px; text-align: center;">
-            Si fue un error o querés volver a reservar, podés hacerlo desde nuestra web.
-          </p>
-          
-          <div style="text-align: center; margin-top: 24px;">
-            <a href="${APP_URL}/reservar" 
-               style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Hacer nueva reserva
-            </a>
-          </div>
-          
-          <p style="color: #666; margin-top: 24px;">
-            ¡Te esperamos pronto!<br/>
-            <strong>Trainera - Cocina Vasca</strong>
-          </p>
         </div>
       `,
     });
   } catch (error) {
-    console.error('Error sending cancellation email:', error);
+    console.error('Error sending cancellation:', error);
   }
 }
 
 export async function enviarNotificacionCancelacionDueno(reserva: ReservaInfo): Promise<void> {
-  // Get email from database config
   const config = await prisma.configuracion.findFirst();
   const emailDueno = config?.emailDueno || process.env.EMAIL_DUENO;
   if (!emailDueno) return;
@@ -265,22 +217,17 @@ export async function enviarNotificacionCancelacionDueno(reserva: ReservaInfo): 
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #991b1b;">Una reserva fue cancelada</h2>
-          
-          <div style="background: #fee2e2; padding: 16px; border-radius: 8px; margin: 16px 0;">
+          <div style="background: #fee2e2; padding: 16px; border-radius: 8px;">
             <p><strong>👤 Nombre:</strong> ${reserva.nombre} ${reserva.apellido}</p>
             <p><strong>📧 Email:</strong> ${reserva.email}</p>
             <p><strong>📅 Fecha:</strong> ${fechaFormateada}</p>
             <p><strong>⏰ Hora:</strong> ${horaFormateada}</p>
             <p><strong>👥 Comensales:</strong> ${reserva.comensales} personas</p>
           </div>
-          
-          <p style="color: #666; font-size: 14px;">
-            Las mesas han sido liberadas automáticamente.
-          </p>
         </div>
       `,
     });
   } catch (error) {
-    console.error('Error sending cancellation notification to owner:', error);
+    console.error('Error sending cancellation notification:', error);
   }
 }
