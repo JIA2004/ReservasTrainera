@@ -108,9 +108,10 @@ export async function enviarNotificacionDueno(reserva: ReservaInfo): Promise<voi
   const cancelarUrl = `${baseAdminUrl}/reservas/${fechaAdmin}/cancelar/${reserva.id}`;
 
   console.log('[EMAIL] Enviando notificación al admin:', emailDueno);
+  console.log('[EMAIL] FROM_EMAIL:', FROM_EMAIL);
 
   try {
-    const result = await resend.emails.send({
+    const result: any = await resend.emails.send({
       from: FROM_EMAIL,
       to: emailDueno,
       subject: `🔔 NUEVA RESERVA: ${reserva.nombre} ${reserva.apellido} - ${reserva.comensales}pax`,
@@ -144,10 +145,24 @@ export async function enviarNotificacionDueno(reserva: ReservaInfo): Promise<voi
       `,
     });
     
-    console.log('[EMAIL] ✅ Resultado:', JSON.stringify(result));
+    console.log('[EMAIL] 📬 Respuesta completa de Resend:', JSON.stringify(result, null, 2));
+    
+    // Check for errors in response
+    if (result.data?.error) {
+      console.error('[EMAIL] ❌ Error de Resend:', result.data.error);
+    } else if (result.error) {
+      console.error('[EMAIL] ❌ Error de Resend:', result.error);
+    } else {
+      console.log('[EMAIL] ✅ Email enviado exitosamente!');
+      console.log('[EMAIL] ID del email:', result.data?.id);
+    }
+    
     console.log('[EMAIL] === FIN NOTIFICACION ===');
-  } catch (error) {
-    console.error('[EMAIL] ❌ Error:', error);
+  } catch (error: any) {
+    console.error('[EMAIL] ❌ Error capturado:', error.message || error);
+    if (error.response) {
+      console.error('[EMAIL] Response:', error.response);
+    }
   }
 }
 
