@@ -108,33 +108,41 @@ export function ReservaCard({ reserva }: Props) {
             </div>
           </div>
           
-          {/* Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm">
-            <div className="flex items-center gap-2 text-gray-600">
-              <Phone className="w-4 h-4 text-gray-400" />
-              <a href={`tel:${reserva.telefono}`} className="hover:text-red-600 transition-colors">
-                {reserva.telefono}
-              </a>
-            </div>
-            <div className="flex items-center gap-2 text-gray-600">
-              <Mail className="w-4 h-4 text-gray-400" />
-              <a href={`mailto:${reserva.email}`} className="hover:text-red-600 transition-colors truncate">
-                {reserva.email}
-              </a>
-            </div>
-            <div className="flex items-center gap-2 text-gray-600">
-              <Users className="w-4 h-4 text-gray-400" />
-              <span>{reserva.comensales} comensales</span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-600">
-              <Armchair className="w-4 h-4 text-gray-400" />
-              <span className={reserva.mesas.length === 0 ? 'text-amber-600' : ''}>
-                {reserva.mesas.length > 0 
-                  ? reserva.mesas.map((m) => m.mesa.nombre).join(', ')
-                  : 'Sin asignar'}
-              </span>
-            </div>
-          </div>
+          {/* Helper to convert phone to WhatsApp format */}
+          {(() => {
+            const telefonoLimpio = reserva.telefono.replace(/[\s\-()]/g, '');
+            const waLink = telefonoLimpio.startsWith('+54') 
+              ? telefonoLimpio.replace('+54', 'https://wa.me/54')
+              : telefonoLimpio.startsWith('0')
+                ? `https://wa.me/54${telefonoLimpio.slice(1)}`
+                : `https://wa.me/54${telefonoLimpio}`;
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Phone className="w-4 h-4 text-gray-400" />
+                  <a href={waLink} target="_blank" rel="noopener noreferrer" className="hover:text-red-600 transition-colors">
+                    {reserva.telefono}
+                  </a>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Mail className="w-4 h-4 text-gray-400" />
+                  <span>{reserva.email}</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Users className="w-4 h-4 text-gray-400" />
+                  <span>{reserva.comensales} comensales</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Armchair className="w-4 h-4 text-gray-400" />
+                  <span className={reserva.mesas.length === 0 ? 'text-amber-600' : ''}>
+                    {reserva.mesas.length > 0 
+                      ? reserva.mesas.map((m) => m.mesa.nombre).join(', ')
+                      : 'Sin asignar'}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Actions */}
