@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { signCookie } from '@/lib/cookie-utils';
 
 // Simple in-memory rate limiting (resets on server restart)
 // For production, use Redis or similar
@@ -52,11 +51,8 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({ success: true });
     
-    // Generar token firmado para evitar tampering
-    const sessionToken = crypto.randomUUID();
-    const signedToken = signCookie(sessionToken, process.env.ADMIN_SESSION_SECRET!);
-    
-    response.cookies.set('admin_session', signedToken, {
+    // Set simple session cookie (for production, use signed cookies)
+    response.cookies.set('admin_session', process.env.ADMIN_PASSWORD!, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
