@@ -42,6 +42,9 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { password } = body;
 
+    console.log('Login attempt, password match:', password === process.env.ADMIN_PASSWORD);
+    console.log('ENV ADMIN_PASSWORD exists:', !!process.env.ADMIN_PASSWORD);
+    
     if (password !== process.env.ADMIN_PASSWORD) {
       return NextResponse.json(
         { error: 'Contraseña incorrecta' },
@@ -51,13 +54,16 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({ success: true });
     
-    // Set simple session cookie (for production, use signed cookies)
+    // Set simple session cookie
     response.cookies.set('admin_session', process.env.ADMIN_PASSWORD!, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: '/', // Important: scope to entire site
     });
+
+    console.log('Login successful, cookie set');
 
     return response;
   } catch (error) {
