@@ -98,7 +98,7 @@ export async function obtenerDisponibilidadPorSlot(
 /**
  * Algoritmo greedy para encontrar la mejor combinación de mesas
  */
-function matchingGreedy(
+export function matchingGreedy(
   comensales: number,
   mesas: Mesa[]
 ): MatchingResult {
@@ -185,6 +185,7 @@ export async function encontrarMesasDisponibles(
 /**
  * Libera las mesas de una reserva (para cancelaciones)
  */
+// ... existing code ...
 export async function liberarMesasReserva(
   prisma: PrismaClientOrTransaction,
   reservaId: string
@@ -192,4 +193,24 @@ export async function liberarMesasReserva(
   await prisma.reservaMesa.deleteMany({
     where: { reservaId },
   });
+}
+
+export function calcularMesasLibres(
+  todasMesas: { id: string; capacidad: number; activa: boolean }[],
+  reservas: { mesas: { mesaId: string }[] }[]
+): { id: string; capacidad: number; disponible: boolean }[] {
+  const mesasOcupadas = new Set<string>();
+  reservas.forEach((reserva) => {
+    reserva.mesas.forEach((rm) => {
+      mesasOcupadas.add(rm.mesaId);
+    });
+  });
+
+  return todasMesas
+    .filter((m) => m.activa)
+    .map((mesa) => ({
+      ...mesa,
+      disponible: !mesasOcupadas.has(mesa.id),
+    }))
+    .sort((a, b) => b.capacidad - a.capacidad);
 }

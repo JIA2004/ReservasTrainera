@@ -4,6 +4,13 @@ import { encontrarMesasDisponibles } from '@/lib/matching';
 import { z } from 'zod';
 import { ReservaEstado } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import {
+  validateEmail,
+  validatePhone,
+  validateDate,
+  isDayValid,
+  isTimeValid,
+} from '@/app/lib/validations';
 
 const reservaSchema = z.object({
   nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -20,36 +27,50 @@ export async function POST(request: Request) {
     const body = await request.json();
     const data = reservaSchema.parse(body);
 
-    // Validar horario (hardcodeado como fallback)
-    const horariosValidos = ['19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30'];
-    if (!horariosValidos.includes(data.hora)) {
+    // Cargar configuración desde la DB
+    const config = await prisma.configuracion.findUnique({
+      where: { id: 'global' },
+    });
+
+    if (!config) {
       return NextResponse.json(
-        { error: 'HORARIO_INVALIDO', mensaje: 'Este horario no está disponible para reservas' },
-        { status: 400 }
+        { error: 'CONFIGURACION_FALTANTE', mensaje: 'El sistema no tiene configurada la información necesaria.' },
+        { status: 500 }
       );
     }
 
-    // Validar fecha
-    const [y, m, d] = data.fecha.split('-').map(Number);
-    const fechaReserva = new Date(y, m - 1, d);
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    
-    const maxFecha = new Date();
-    maxFecha.setDate(maxFecha.getDate() + 30);
-    
-    if (fechaReserva < hoy || fechaReserva > maxFecha) {
+    const validTimes = config.horariosReservas.split(',');
+
+    // Validar Email y Teléfono usando el módulo de validaciones
+    if (data.email && !validateEmail(data.email)) {
+      return NextResponse.json({ error: 'EMAIL_INVALIDO', mensaje: 'El email proporcionado no es válido' }, { status: 400 });
+    }
+    if (!validatePhone(data.telefono)) {
+      return NextResponse.json({ error: 'TELEFONO_INVALIDO', mensaje: 'El teléfono proporcionado no es válido' }, { status: 400 });
+    }
+
+    // Validar fecha y obtener objeto Date
+    const dateValidation = validateDate(data.fecha);
+    if (!dateValidation.isValid) {
       return NextResponse.json(
-        { error: 'FECHA_INVALIDA', mensaje: 'La fecha seleccionada no está dentro del rango permitido' },
+        { error: 'FECHA_INVALIDA', mensaje: dateValidation.error || 'La fecha seleccionada no es válida' },
         { status: 400 }
       );
     }
+    const fechaReserva = dateValidation.date!;
 
-    // Verificar que sea día válido (martes a sábado)
-    const diaSemana = fechaReserva.getDay();
-    if (diaSemana === 0 || diaSemana === 1) {
+    // Verificar que sea día válido
+    if (!isDayValid(fechaReserva)) {
       return NextResponse.json(
         { error: 'DIA_INVALIDO', mensaje: 'El restaurante no abre los domingos ni lunes' },
+        { status: 400 }
+      );
+    }
+
+    // Validar horario
+    if (!isTimeValid(data.hora, validTimes)) {
+      return NextResponse.json(
+        { error: 'HORARIO_INVALIDO', mensaje: 'Este horario no está disponible para reservas' },
         { status: 400 }
       );
     }
@@ -87,8 +108,6 @@ export async function POST(request: Request) {
 
       return created;
     });
-
-    // Sin emails - todo se gestiona en /admin
 
     return NextResponse.json({
       success: true,

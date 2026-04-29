@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { validateEmail, validatePhone, validateDate, isDayValid, isTimeValid } from '@/app/lib/validations';
 
 // ============================================
 // TESTS DE VALIDACIÓN - API RESERVAS
@@ -22,19 +23,19 @@ describe('Validación de datos de reserva', () => {
 
     if (!data.email?.trim()) {
       errores.push('Email es requerido');
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    } else if (!validateEmail(data.email)) {
       errores.push('Email inválido');
     }
 
     if (!data.telefono?.trim()) {
       errores.push('Teléfono es requerido');
-    } else if (!/^\+?[0-9\s\-()]{8,20}$/.test(data.telefono)) {
+    } else if (!validatePhone(data.telefono)) {
       errores.push('Teléfono inválido');
     }
 
     if (!data.fecha) {
       errores.push('Fecha es requerida');
-    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(data.fecha)) {
+    } else if (!validateDate(data.fecha).isValid) {
       errores.push('Formato de fecha inválido (usar YYYY-MM-DD)');
     }
 
@@ -52,12 +53,14 @@ describe('Validación de datos de reserva', () => {
   }
 
   it('debería validar reserva completa y correcta', () => {
+    const hoy = new Date();
+    const fechaHoy = hoy.toISOString().split('T')[0];
     const data = {
       nombre: 'Juan',
       apellido: 'Pérez',
       email: 'juan@test.com',
       telefono: '3415551234',
-      fecha: '2024-04-15',
+      fecha: fechaHoy,
       hora: '20:00',
       comensales: 4,
     };
@@ -141,80 +144,53 @@ describe('Validación de datos de reserva', () => {
 });
 
 describe('Validación de fecha', () => {
-  function validarFecha(fechaStr: string): { valida: boolean; error?: string } {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
-      return { valida: false, error: 'Formato inválido' };
-    }
-
-    const [year, month, day] = fechaStr.split('-').map(Number);
-    const fechaDate = new Date(year, month - 1, day);
-
-    if (
-      fechaDate.getFullYear() !== year ||
-      fechaDate.getMonth() !== month - 1 ||
-      fechaDate.getDate() !== day
-    ) {
-      return { valida: false, error: 'Fecha no existe' };
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (fechaDate < today) {
-      return { valida: false, error: 'Fecha en el pasado' };
-    }
-
-    return { valida: true };
-  }
-
   it('debería aceptar fechas futuras válidas', () => {
     const manana = new Date();
     manana.setDate(manana.getDate() + 1);
     const fechaStr = manana.toISOString().split('T')[0];
 
-    const resultado = validarFecha(fechaStr);
-    expect(resultado.valida).toBe(true);
+    const resultado = validateDate(fechaStr);
+    expect(resultado.isValid).toBe(true);
   });
 
   it('debería rechazar fechas inválidas', () => {
-    expect(validarFecha('2024-02-30').valida).toBe(false); // 30 de febrero no existe
-    expect(validarFecha('2024-13-01').valida).toBe(false); // Mes 13 no existe
+    expect(validateDate('2024-02-30').isValid).toBe(false); // 30 de febrero no existe
+    expect(validateDate('2024-13-01').isValid).toBe(false); // Mes 13 no existe
   });
 
   it('debería rechazar fechas en el pasado', () => {
-    expect(validarFecha('2020-01-01').valida).toBe(false);
+    expect(validateDate('2020-01-01').isValid).toBe(false);
   });
 
   it('debería validar días de la semana', () => {
-    function esDiaValido(fecha: Date): boolean {
-      const day = fecha.getDay();
-      return day >= 2 && day <= 6; // Martes = 2, Sábado = 6
-    }
-
     // Martes (válido)
-    expect(esDiaValido(new Date(2024, 3, 16))).toBe(true);
+    const martes = new Date();
+    while (martes.getDay() !== 2) martes.setDate(martes.getDate() + 1);
+    expect(isDayValid(martes)).toBe(true);
     // Miércoles (válido)
-    expect(esDiaValido(new Date(2024, 3, 17))).toBe(true);
+    const miercoles = new Date();
+    while (miercoles.getDay() !== 3) miercoles.setDate(miercoles.getDate() + 1);
+    expect(isDayValid(miercoles)).toBe(true);
     // Domingo (inválido)
-    expect(esDiaValido(new Date(2024, 3, 21))).toBe(false);
+    const domingo = new Date();
+    while (domingo.getDay() !== 0) domingo.setDate(domingo.getDate() + 1);
+    expect(isDayValid(domingo)).toBe(false);
     // Lunes (inválido)
-    expect(esDiaValido(new Date(2024, 3, 22))).toBe(false);
+    const lunes = new Date();
+    while (lunes.getDay() !== 1) lunes.setDate(lunes.getDate() + 1);
+    expect(isDayValid(lunes)).toBe(false);
   });
 });
 
 describe('Validación de horarios', () => {
-  function esHorarioValido(hora: string, horariosDisponibles: string[]): boolean {
-    return horariosDisponibles.includes(hora);
-  }
-
   it('debería validar horarios del restaurante', () => {
     const horarios = ['19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30'];
 
-    expect(esHorarioValido('19:00', horarios)).toBe(true);
-    expect(esHorarioValido('22:30', horarios)).toBe(true);
-    expect(esHorarioValido('18:30', horarios)).toBe(false);
-    expect(esHorarioValido('23:00', horarios)).toBe(false);
-    expect(esHorarioValido('20:15', horarios)).toBe(false); // No es :00 o :30
+    expect(isTimeValid('19:00', horarios)).toBe(true);
+    expect(isTimeValid('22:30', horarios)).toBe(true);
+    expect(isTimeValid('18:30', horarios)).toBe(false);
+    expect(isTimeValid('23:00', horarios)).toBe(false);
+    expect(isTimeValid('20:15', horarios)).toBe(false); // No es :00 o :30
   });
 
   it('debería tener formato HH:MM correcto', () => {

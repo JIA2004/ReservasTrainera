@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { matchingGreedy, calcularMesasLibres } from '@/lib/matching';
+import { validateDate, isDayValid, validateEmail, validatePhone } from '@/app/lib/validations';
 
 // ============================================
 // TESTS PARA UTILIDADES DE MATCHING
@@ -6,69 +8,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // ============================================
 
 describe('Matching Logic - Tests Unitarios', () => {
-  // Helper para simular el algoritmo greedy
-  function matchingGreedy(comensales: number, mesas: { id: string; capacidad: number }[]): { disponible: boolean; requiereAtencion: boolean; mensaje?: string } {
-    // Caso especial: comensales > 6 requiere atención manual
-    if (comensales > 6) {
-      return {
-        disponible: false,
-        requiereAtencion: true,
-        mensaje: 'Para grupos de más de 6 personas, contactá directamente al restaurante.',
-      };
-    }
-
-    // Intento 1: Mesa individual que alcance o supere por poco (tolerance +2)
-    for (const mesa of mesas) {
-      if (mesa.capacidad >= comensales && mesa.capacidad <= comensales + 2) {
-        return { disponible: true, requiereAtencion: false };
-      }
-    }
-
-    // Intento 2: Mesa individual que alcance o supere (sin tolerancia)
-    for (const mesa of mesas) {
-      if (mesa.capacidad >= comensales) {
-        return { disponible: true, requiereAtencion: false };
-      }
-    }
-
-    // Intento 3: Combinación de 2 mesas
-    for (let i = 0; i < mesas.length; i++) {
-      for (let j = i + 1; j < mesas.length; j++) {
-        if (mesas[i].capacidad + mesas[j].capacidad >= comensales) {
-          return { disponible: true, requiereAtencion: false };
-        }
-      }
-    }
-
-    // No hay combinación posible
-    return {
-      disponible: false,
-      requiereAtencion: false,
-      mensaje: 'No hay disponibilidad para esa cantidad de comensales.',
-    };
-  }
-
-  // Helper para calcular disponibilidad
-  function calcularMesasLibres(
-    todasMesas: { id: string; capacidad: number; activa: boolean }[],
-    reservas: { mesas: { mesaId: string }[] }[]
-  ): { id: string; capacidad: number; disponible: boolean }[] {
-    const mesasOcupadas = new Set<string>();
-    reservas.forEach((reserva) => {
-      reserva.mesas.forEach((rm) => {
-        mesasOcupadas.add(rm.mesaId);
-      });
-    });
-
-    return todasMesas
-      .filter((m) => m.activa)
-      .map((mesa) => ({
-        ...mesa,
-        disponible: !mesasOcupadas.has(mesa.id),
-      }))
-      .sort((a, b) => b.capacidad - a.capacidad);
-  }
-
   describe('matchingGreedy', () => {
     it('debería asignar mesa con tolerancia +2 cuando sea mejor opción', () => {
       const mesas = [
@@ -76,7 +15,7 @@ describe('Matching Logic - Tests Unitarios', () => {
         { id: 'mesa-grande', capacidad: 8 },
       ];
       
-      const resultado = matchingGreedy(4, mesas);
+      const resultado = matchingGreedy(4, mesas as any);
       
       expect(resultado.disponible).toBe(true);
       expect(resultado.requiereAtencion).toBe(false);
@@ -87,7 +26,7 @@ describe('Matching Logic - Tests Unitarios', () => {
         { id: 'mesa-1', capacidad: 10 },
       ];
       
-      const resultado = matchingGreedy(8, mesas);
+      const resultado = matchingGreedy(8, mesas as any);
       
       expect(resultado.disponible).toBe(false);
       expect(resultado.requiereAtencion).toBe(true);
@@ -100,7 +39,7 @@ describe('Matching Logic - Tests Unitarios', () => {
         { id: 'mesa-2', capacidad: 4 },
       ];
       
-      const resultado = matchingGreedy(5, mesas);
+      const resultado = matchingGreedy(5, mesas as any);
       
       expect(resultado.disponible).toBe(true);
     });
@@ -111,7 +50,7 @@ describe('Matching Logic - Tests Unitarios', () => {
         { id: 'mesa-2', capacidad: 2 },
       ];
       
-      const resultado = matchingGreedy(6, mesas);
+      const resultado = matchingGreedy(6, mesas as any);
       
       expect(resultado.disponible).toBe(false);
     });
@@ -121,7 +60,7 @@ describe('Matching Logic - Tests Unitarios', () => {
         { id: 'mesa-1', capacidad: 4 },
       ];
       
-      const resultado = matchingGreedy(1, mesas);
+      const resultado = matchingGreedy(1, mesas as any);
       
       expect(resultado.disponible).toBe(true);
     });
@@ -131,7 +70,7 @@ describe('Matching Logic - Tests Unitarios', () => {
         { id: 'mesa-1', capacidad: 6 },
       ];
       
-      const resultado = matchingGreedy(6, mesas);
+      const resultado = matchingGreedy(6, mesas as any);
       
       expect(resultado.disponible).toBe(true);
       expect(resultado.requiereAtencion).toBe(false);
@@ -244,93 +183,80 @@ describe('Matching Logic - Tests Unitarios', () => {
 });
 
 describe('Validación de fechas', () => {
-  function validarFecha(fechaStr: string): boolean {
-    // Validar formato YYYY-MM-DD
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
-      return false;
-    }
-    
-    const [year, month, day] = fechaStr.split('-').map(Number);
-    const fechaDate = new Date(year, month - 1, day);
-    
-    // Verificar que la fecha es válida
-    return (
-      fechaDate.getFullYear() === year &&
-      fechaDate.getMonth() === month - 1 &&
-      fechaDate.getDate() === day
-    );
-  }
-
-  function esDiaValido(fecha: Date): boolean {
-    const day = fecha.getDay();
-    return day >= 2 && day <= 6; // Martes = 2, Sábado = 6
-  }
-
   it('debería validar formato de fecha correcto', () => {
-    expect(validarFecha('2024-04-15')).toBe(true);
-    expect(validarFecha('2024-12-31')).toBe(true);
-    expect(validarFecha('2024-01-01')).toBe(true);
+    const hoy = new Date();
+    const fechaHoy = hoy.toISOString().split('T')[0];
+    const manana = new Date();
+    manana.setDate(manana.getDate() + 1);
+    const fechaManana = manana.toISOString().split('T')[0];
+
+    expect(validateDate(fechaHoy).isValid).toBe(true);
+    expect(validateDate(fechaManana).isValid).toBe(true);
   });
 
   it('debería rechazar formato de fecha incorrecto', () => {
-    expect(validarFecha('15-04-2024')).toBe(false);
-    expect(validarFecha('2024/04/15')).toBe(false);
-    expect(validarFecha('inválido')).toBe(false);
-    expect(validarFecha('')).toBe(false);
+    expect(validateDate('15-04-2024').isValid).toBe(false);
+    expect(validateDate('2024/04/15').isValid).toBe(false);
+    expect(validateDate('inválido').isValid).toBe(false);
+    expect(validateDate('').isValid).toBe(false);
   });
 
   it('debería validar días de la semana (martes a sábado)', () => {
     // Martes
-    expect(esDiaValido(new Date(2024, 3, 16))).toBe(true); // 16 de abril de 2024 es martes
+    const martes = new Date();
+    while (martes.getDay() !== 2) martes.setDate(martes.getDate() + 1);
+    expect(isDayValid(martes)).toBe(true); 
     // Miércoles
-    expect(esDiaValido(new Date(2024, 3, 17))).toBe(true);
+    const miercoles = new Date();
+    while (miercoles.getDay() !== 3) miercoles.setDate(miercoles.getDate() + 1);
+    expect(isDayValid(miercoles)).toBe(true);
     // Jueves
-    expect(esDiaValido(new Date(2024, 3, 18))).toBe(true);
+    const jueves = new Date();
+    while (jueves.getDay() !== 4) jueves.setDate(jueves.getDate() + 1);
+    expect(isDayValid(jueves)).toBe(true);
     // Viernes
-    expect(esDiaValido(new Date(2024, 3, 19))).toBe(true);
+    const viernes = new Date();
+    while (viernes.getDay() !== 5) viernes.setDate(viernes.getDate() + 1);
+    expect(isDayValid(viernes)).toBe(true);
     // Sábado
-    expect(esDiaValido(new Date(2024, 3, 20))).toBe(true);
+    const sabado = new Date();
+    while (sabado.getDay() !== 6) sabado.setDate(sabado.getDate() + 1);
+    expect(isDayValid(sabado)).toBe(true);
     // Domingo
-    expect(esDiaValido(new Date(2024, 3, 21))).toBe(false);
+    const domingo = new Date();
+    while (domingo.getDay() !== 0) domingo.setDate(domingo.getDate() + 1);
+    expect(isDayValid(domingo)).toBe(false);
     // Lunes
-    expect(esDiaValido(new Date(2024, 3, 22))).toBe(false);
+    const lunes = new Date();
+    while (lunes.getDay() !== 1) lunes.setDate(lunes.getDate() + 1);
+    expect(isDayValid(lunes)).toBe(false);
   });
 });
 
 describe('Validación de datos de reserva', () => {
-  function validarEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  function validarTelefono(telefono: string): boolean {
-    const telefonoRegex = /^\+?[0-9\s\-()]{8,20}$/;
-    return telefonoRegex.test(telefono);
-  }
-
   it('debería validar emails correctos', () => {
-    expect(validarEmail('test@example.com')).toBe(true);
-    expect(validarEmail('usuario.correo@dominio.com.ar')).toBe(true);
-    expect(validarEmail('nombre+tag@gmail.com')).toBe(true);
+    expect(validateEmail('test@example.com')).toBe(true);
+    expect(validateEmail('usuario.correo@dominio.com.ar')).toBe(true);
+    expect(validateEmail('nombre+tag@gmail.com')).toBe(true);
   });
 
   it('debería rechazar emails inválidos', () => {
-    expect(validarEmail('sin-arroba')).toBe(false);
-    expect(validarEmail('espacios@ correo.com')).toBe(false);
-    expect(validarEmail('@sin-local.com')).toBe(false);
-    expect(validarEmail('')).toBe(false);
+    expect(validateEmail('sin-arroba')).toBe(false);
+    expect(validateEmail('espacios@ correo.com')).toBe(false);
+    expect(validateEmail('@sin-local.com')).toBe(false);
+    expect(validateEmail('')).toBe(false);
   });
 
   it('debería validar teléfonos correctos', () => {
-    expect(validarTelefono('3415551234')).toBe(true);
-    expect(validarTelefono('+54 9 341 555 1234')).toBe(true);
-    expect(validarTelefono('(341) 555-1234')).toBe(true);
-    expect(validarTelefono('3416-880752')).toBe(true);
+    expect(validatePhone('3415551234')).toBe(true);
+    expect(validatePhone('+54 9 341 555 1234')).toBe(true);
+    expect(validatePhone('(341) 555-1234')).toBe(true);
+    expect(validatePhone('3416-880752')).toBe(true);
   });
 
   it('debería rechazar teléfonos inválidos', () => {
-    expect(validarTelefono('123')).toBe(false); // Muy corto
-    expect(validarTelefono('')).toBe(false);
-    expect(validarTelefono('abcdefghij')).toBe(false);
+    expect(validatePhone('123')).toBe(false); // Muy corto
+    expect(validatePhone('')).toBe(false);
+    expect(validatePhone('abcdefghij')).toBe(false);
   });
 });
