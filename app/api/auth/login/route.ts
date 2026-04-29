@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     
     console.log('Cookie options:', cookieOptions, 'ENV:', process.env.NODE_ENV);
     
-    response.cookies.set('admin_session', process.env.ADMIN_PASSWORD!, cookieOptions);
+    response.cookies.set('admin_session', process.env.ADMIN_SESSION_SECRET!, cookieOptions);
 
     console.log('Login successful, cookie set');
 
