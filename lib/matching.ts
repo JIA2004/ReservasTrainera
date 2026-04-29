@@ -1,6 +1,6 @@
 import { PrismaClient, Mesa, ReservaEstado } from '@prisma/client';
+import { MatchingResult, ContiguityGraph } from './matching-types';
 
-// Type aliases for Prisma clients (works with both regular client and transaction client)
 type PrismaClientOrTransaction = Parameters<Parameters<PrismaClient['$transaction']>[0]>[0];
 
 interface MesaConDisponibilidad extends Mesa {
@@ -14,13 +14,6 @@ interface SlotDisponibilidad {
   requiereAtencion: boolean;
 }
 
-interface MatchingResult {
-  disponible: boolean;
-  requiereAtencion: boolean;
-  mensaje?: string;
-  mesasAsignadas?: Mesa[];
-}
-
 /**
  * Obtiene las mesas disponibles para una fecha y hora específica
  */
@@ -29,13 +22,11 @@ export async function obtenerMesasDisponibles(
   fecha: Date,
   hora: string
 ): Promise<MesaConDisponibilidad[]> {
-  // Obtener todas las mesas activas
   const todasMesas = await prisma.mesa.findMany({
     where: { activa: true },
     orderBy: { capacidad: 'desc' },
   });
 
-  // Obtener reservas existentes para fecha+hora
   const reservasExistentes = await prisma.reserva.findMany({
     where: {
       fecha: fecha,
@@ -49,7 +40,6 @@ export async function obtenerMesasDisponibles(
     },
   });
 
-  // Calcular mesas ocupadas
   const mesasOcupadas = new Set<string>();
   reservasExistentes.forEach((reserva) => {
     reserva.mesas.forEach((rm) => {
@@ -57,11 +47,29 @@ export async function obtenerMesasDisponibles(
     });
   });
 
-  // Marcar disponibilidad
   return todasMesas.map((mesa) => ({
     ...mesa,
     disponible: !mesasOcupadas.has(mesa.id),
   }));
+}
+
+/**
+ * Obtiene el grafo de contigüidad de las mesas
+ */
+export async function obtenerGrafoContigüidad(
+  prisma: PrismaClientOrTransaction
+): Promise<ContiguityGraph> {
+  const relaciones = await (prisma as any).mesaVecina.findMany();
+  const grafo: ContiguityGraph = {};
+
+  relaciones.forEach(({ mesaAId, mesaBId }: { mesaAId: string; mesaBId: string }) => {
+    if (!grafo[mesaAId]) grafo[mesaAId] = [];
+    if (!grafo[mesaBId]) grafo[mesaBId] = [];
+    grafo[mesaAId].push(mesaBId);
+    grafo[mesaBId].push(mesaAId);
+  });
+
+  return grafo;
 }
 
 /**
@@ -78,7 +86,6 @@ export async function obtenerDisponibilidadPorSlot(
     const mesas = await obtenerMesasDisponibles(prisma, fecha, hora);
     const disponibles = mesas.filter((m) => m.disponible);
 
-    // Calcular capacidad total disponible
     const capacidadDisponible = disponibles.reduce(
       (sum, m) => sum + m.capacidad,
       0
@@ -88,7 +95,7 @@ export async function obtenerDisponibilidadPorSlot(
       hora,
       disponibles: capacidadDisponible,
       puedeReservar: capacidadDisponible > 0,
-      requiereAtencion: false, // Se determina al hacer match específico
+      requiereAtencion: false,
     });
   }
 
@@ -96,54 +103,79 @@ export async function obtenerDisponibilidadPorSlot(
 }
 
 /**
- * Algoritmo greedy para encontrar la mejor combinación de mesas
+ * Motor de matching recursivo para encontrar la combinación óptima de mesas contiguas
  */
-export function matchingGreedy(
-  comensales: number,
-  mesas: Mesa[]
+export function matchingRecursive(
+  groupSize: number,
+  mesas: Mesa[],
+  graph: ContiguityGraph
 ): MatchingResult {
-  // Caso especial: comensales > 6 requiere atención manual
-  if (comensales > 6) {
-    return {
-      disponible: false,
-      requiereAtencion: true,
-      mensaje:
-        'Para grupos de más de 6 personas, contactá directamente al restaurante.',
-    };
-  }
+  let bestCombination: Mesa[] | null = null;
+  let minWastedSpace = Infinity;
 
-  // Intento 1: Mesa individual que alcance o supere por poco (tolerance +2)
-  for (const mesa of mesas) {
-    if (mesa.capacidad >= comensales && mesa.capacidad <= comensales + 2) {
-      return { disponible: true, requiereAtencion: false, mesasAsignadas: [mesa] };
+  const availableIds = new Set(mesas.map((m) => m.id));
+  const mesaMap = new Map(mesas.map((m) => [m.id, m]));
+
+  // If graph is empty, we treat all available tables as connected (fallback)
+  const isGraphEmpty = Object.keys(graph).length === 0;
+
+  function findCombinations(
+    currentSet: Mesa[],
+    currentCapacity: number,
+    visitedIds: Set<string>
+  ) {
+    if (currentCapacity >= groupSize) {
+      const wastedSpace = currentCapacity - groupSize;
+      if (wastedSpace < minWastedSpace) {
+        minWastedSpace = wastedSpace;
+        bestCombination = [...currentSet];
+      }
+      // Once we meet capacity, adding more tables only increases wastedSpace
+      return;
     }
-  }
 
-  // Intento 2: Mesa individual que alcance o supere (sin tolerancia)
-  for (const mesa of mesas) {
-    if (mesa.capacidad >= comensales) {
-      return { disponible: true, requiereAtencion: false, mesasAsignadas: [mesa] };
-    }
-  }
+    // Try expanding from any table already in the set
+    for (const mesa of currentSet) {
+      const neighbors = isGraphEmpty 
+        ? mesas.map(m => m.id) 
+        : (graph[mesa.id] || []);
 
-  // Intento 3: Combinación de 2 mesas
-  for (let i = 0; i < mesas.length; i++) {
-    for (let j = i + 1; j < mesas.length; j++) {
-      if (mesas[i].capacidad + mesas[j].capacidad >= comensales) {
-        return {
-          disponible: true,
-          requiereAtencion: false,
-          mesasAsignadas: [mesas[i], mesas[j]],
-        };
+      for (const neighborId of neighbors) {
+        if (availableIds.has(neighborId) && !visitedIds.has(neighborId)) {
+          const neighborMesa = mesaMap.get(neighborId)!;
+          
+          visitedIds.add(neighborId);
+          findCombinations(
+            [...currentSet, neighborMesa],
+            currentCapacity + neighborMesa.capacidad,
+            visitedIds
+          );
+          visitedIds.delete(neighborId);
+        }
       }
     }
   }
 
-  // No hay combinación posible
+  // Start the recursive search from each available table
+  for (const mesa of mesas) {
+    const visited = new Set<string>([mesa.id]);
+    findCombinations([mesa], mesa.capacidad, visited);
+  }
+
+  if (bestCombination) {
+    return {
+      disponible: true,
+      requiereAtencion: false,
+      mesasAsignadas: bestCombination,
+      wastedSpace: minWastedSpace,
+    };
+  }
+
   return {
     disponible: false,
     requiereAtencion: false,
     mensaje: 'No hay disponibilidad para esa cantidad de comensales.',
+    wastedSpace: Infinity,
   };
 }
 
@@ -157,35 +189,36 @@ export async function encontrarMesasDisponibles(
   comensales: number
 ): Promise<MatchingResult> {
   const mesasDisponibles = await obtenerMesasDisponibles(prisma, fecha, hora);
-  const mesasLibres = mesasDisponibles.filter((m) => m.disponible);
+  const mesasLibres = mesasDisponibles.filter((m) => m.disponible).map(m => {
+     const { disponible, ...mesa } = m;
+     return mesa as Mesa;
+  });
 
-  // Si no hay mesas en el sistema, NO permitir reserva
   if (mesasDisponibles.length === 0) {
     return {
       disponible: false,
       requiereAtencion: true,
       mensaje: 'El restaurante no tiene mesas configuradas. Contactá al restaurante.',
-      mesasAsignadas: [],
+      wastedSpace: Infinity,
     };
   }
 
-  // Si hay mesas pero ninguna libre, NO permitir reserva
   if (mesasLibres.length === 0) {
     return {
       disponible: false,
       requiereAtencion: true,
       mensaje: 'No hay disponibilidad en este horario. Probá con otro horario.',
-      mesasAsignadas: [],
+      wastedSpace: Infinity,
     };
   }
 
-  return matchingGreedy(comensales, mesasLibres);
+  const grafo = await obtenerGrafoContigüidad(prisma);
+  return matchingRecursive(comensales, mesasLibres, grafo);
 }
 
 /**
  * Libera las mesas de una reserva (para cancelaciones)
  */
-// ... existing code ...
 export async function liberarMesasReserva(
   prisma: PrismaClientOrTransaction,
   reservaId: string

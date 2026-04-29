@@ -12,12 +12,21 @@ model Mesa {
   nombre    String
   capacidad Int
   tipo      MesaTipo @default(MESA)
+  estado    MesaEstado @default(AVAILABLE)
   activa    Boolean  @default(true)
   reservas  ReservaMesa[]
+  vecinasA  MesaVecina[] @relation("MesaA")
+  vecinasB  MesaVecina[] @relation("MesaB")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("mesas")
+}
+
+enum MesaEstado {
+  AVAILABLE
+  OCCUPIED
+  PENDING_REVIEW
 }
 
 enum MesaTipo {
@@ -73,6 +82,15 @@ model Configuracion {
   diasAntelacionMin    Int    @default(0)
   diasAntelacionMax    Int    @default(30)
   horariosReservas     String @default("19:00,19:30,20:00,20:30,21:00,21:30,22:00,22:30")
+  maxTableCapacity     Int    @default(8)
 
   @@map("configuracion")
+}
+
+model MesaVecina {
+  mesaAId String
+  mesaBId String
+  @@id([mesaAId, mesaBId])
+  mesaA Mesa @relation("MesaA", fields: [mesaAId], references: [id])
+  mesaB Mesa @relation("MesaB", fields: [mesaBId], references: [id])
 }
